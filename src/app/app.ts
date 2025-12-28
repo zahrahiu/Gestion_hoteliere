@@ -9,4 +9,4 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-export class App {}
+export class AppComponent {}
