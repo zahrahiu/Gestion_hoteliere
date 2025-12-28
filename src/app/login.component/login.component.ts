@@ -50,7 +50,7 @@ export class LoginComponent {
   // Redirection vers la page d’inscription
   onSignUp(event: Event) {
     event.preventDefault();
-    this.router.navigate(['/signup']);
+    this.router.navigate(['/register']); //route register here
   }
 
   // Login avec Google

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass, NgFor, NgIf } from '@angular/common';
+import {AuthService} from '../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -19,8 +20,8 @@ import { NgClass, NgFor, NgIf } from '@angular/common';
 export class Register {
   navItems = [
     { name: 'Home', active: false },
+    { name: 'About', active: false },
     { name: 'Rooms', active: false },
-    { name: 'Services', active: false },
     { name: 'Contact', active: false }
   ];
 
@@ -28,8 +29,9 @@ export class Register {
   password = '';
   showPassword = false;
   isLoading = false;
+  error: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onNavItemClick(item: any, event: Event) {
     event.preventDefault();
@@ -42,17 +44,31 @@ export class Register {
   }
 
   onSubmit() {
-    this.isLoading = true;
+    if (!this.email || !this.password) return;
 
-    setTimeout(() => {
-      console.log('REGISTER', this.email, this.password);
-      this.isLoading = false;
-      this.router.navigate(['/login']);
-    }, 1500);
+    this.isLoading = true;
+    this.error = '';
+
+    this.authService.register(this.email, this.password).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        console.log('User registered successfully:', response);
+        // Redirection l login
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        if (err.status === 409) this.error = 'Email already in use';
+        else if (err.status === 400) this.error = 'Invalid data';
+        else this.error = 'Server error, please try again';
+      }
+    });
   }
 
-  onGoogleLogin() {}
-  onFacebookLogin() {}
+
+  // Social login placeholders
+  onGoogleLogin() { console.log('Google register'); }
+  onFacebookLogin() { console.log('Facebook register'); }
 
   onSignUp(event: Event) {
     event.preventDefault();

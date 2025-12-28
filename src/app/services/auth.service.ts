@@ -31,6 +31,14 @@ export class AuthService {
       );
   }
 
+  register(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users/register`, {
+      email,
+      password,
+      role: ["CLIENT"] // backend kayforce role CLIENT
+    });
+  }
+
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
