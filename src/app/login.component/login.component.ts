@@ -21,9 +21,9 @@ export class LoginComponent {
 
   // Navigation du site
   navItems = [
-    { name: 'Accueil', active: true },
-    { name: 'À propos', active: false },
-    { name: 'Chambres', active: false },
+    { name: 'Home', active: false },
+    { name: 'About', active: false },
+    { name: 'Rooms', active: false },
     { name: 'Contact', active: false }
   ];
 
