@@ -196,11 +196,23 @@
   cursor: pointer;
   font-size: 1.2rem;
   transition: color 0.3s;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .password-toggle:hover {
   color: #c9a96e;
 }
+
+/* Ajustez le padding de l'input pour laisser de la place à l'icône */
+.input-group .modern-input {
+  padding-right: 5rem; /* Pour laisser de la place pour l'icône eye */
+}
+
 
 /* Form Options */
 .form-options {
