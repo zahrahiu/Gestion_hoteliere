@@ -6,10 +6,9 @@ import { CommonModule } from '@angular/common';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet],
-  templateUrl: './app.html',
+  template: `<router-outlet></router-outlet>`,
   styleUrls: ['./app.css']
 })
-export class AppComponent {}
-
-
-
+export class AppComponent {
+  title = 'Royellas Hotel';
+}

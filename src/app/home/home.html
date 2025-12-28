@@ -1,10 +1,4 @@
-<!-- Header -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <!-- Dans index.html -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 <header [class.scrolled]="isScrolled">
   <div class="container header-container">
     <a href="#" class="logo">ROYELLAS<span>HOTEL</span></a>
@@ -63,7 +57,7 @@
           <div class="amenity-overlay">
             <div class="amenity-number">01</div>
             <div class="amenity-icon">
-              <i class="fas fa-swimming-pool"></i>
+             <i class="fas fa-swimming-pool"></i> 
             </div>
           </div>
         </div>
@@ -345,8 +339,10 @@
     <p class="cta-desc">Indulge in culinary excellence at our award-winning restaurants, featuring locally-sourced ingredients and international flavors curated by our master chefs.</p>
     <a (click)="openBookingModal()" class="btn btn-primary" style="cursor: pointer">EXPLORE DINING OPTIONS</a>
   </div>
+  <!-- À la fin de home.component.html, juste avant </div> -->
+   
 </section>
-
+<app-chatbot></app-chatbot>
 <!-- Footer -->
 <footer id="contact">
   <div class="container">
