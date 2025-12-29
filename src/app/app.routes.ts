@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home';
 import { LoginComponent } from './login.component/login.component';
 import {Register} from './register/register';
 import {Catalogue} from './catalogue/catalogue';
+import {ClientDashboardComponent} from './components/client/client-dashboard/client-dashboard';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent } ,

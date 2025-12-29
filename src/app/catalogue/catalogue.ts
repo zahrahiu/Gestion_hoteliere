@@ -14,8 +14,8 @@ export class Catalogue {
   navItems = [
     { name: 'Home', active: false },
     { name: 'About', active: false },
-    { name: 'Rooms', active: false },
-    { name: 'Contact', active: false }
+    { name: 'Contact', active: false },
+    { name: 'Profile', active: false }
   ];
 
   onNavItemClick(item: any, event: Event) {

@@ -80,7 +80,7 @@ export class LoginComponent {
         this.isLoading = false;
         // Redirection selon le rôle
         if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
-        else if (response.roles?.includes('CLIENT')) this.router.navigate(['/client']);
+        else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
         else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
         else this.router.navigate(['/dashboard']);
       },
