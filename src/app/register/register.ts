@@ -25,6 +25,8 @@ export class Register {
     { name: 'Contact', active: false }
   ];
 
+  firstName = '';
+  lastName = '';
   email = '';
   password = '';
   showPassword = false;
@@ -44,16 +46,15 @@ export class Register {
   }
 
   onSubmit() {
-    if (!this.email || !this.password) return;
+    if (!this.firstName || !this.lastName || !this.email || !this.password) return;
 
     this.isLoading = true;
     this.error = '';
 
-    this.authService.register(this.email, this.password).subscribe({
+    this.authService.register(this.firstName, this.lastName, this.email, this.password).subscribe({
       next: (response) => {
         this.isLoading = false;
         console.log('User registered successfully:', response);
-        // Redirection l login
         this.router.navigate(['/login']);
       },
       error: (err) => {
@@ -64,7 +65,6 @@ export class Register {
       }
     });
   }
-
 
   // Social login placeholders
   onGoogleLogin() { console.log('Google register'); }

@@ -31,8 +31,10 @@ export class AuthService {
       );
   }
 
-  register(email: string, password: string): Observable<any> {
+  register(firstName: string, lastName: string, email: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/users/register`, {
+      firstName,
+      lastName,
       email,
       password,
       role: ["CLIENT"] // backend kayforce role CLIENT
