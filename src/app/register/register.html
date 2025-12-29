@@ -41,6 +41,34 @@
       </div>
 
       <form class="modern-form" (ngSubmit)="onSubmit()" #registerForm="ngForm">
+        <!-- First Name -->
+        <div class="form-group">
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              class="modern-input"
+              placeholder="First Name"
+              [(ngModel)]="firstName"
+              name="firstName"
+              required>
+          </div>
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-group">
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              class="modern-input"
+              placeholder="Last Name"
+              [(ngModel)]="lastName"
+              name="lastName"
+              required>
+          </div>
+        </div>
+
         <!-- Email -->
         <div class="form-group">
           <div class="input-group">
