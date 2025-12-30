@@ -20,11 +20,15 @@
     </div>
 
     <ul class="nav-menu">
-      <li *ngFor="let item of navItems" [class.active]="item.active">
-        <a href="#" (click)="onNavItemClick(item, $event)">
+      <li *ngFor="let item of navItems">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+        >
           {{ item.name }}
         </a>
       </li>
+
     </ul>
   </div>
 </nav>

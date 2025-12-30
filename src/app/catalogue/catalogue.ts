@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
 import {NgForOf} from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-catalogue',
   imports: [
-    NgForOf
+    NgForOf,
+    RouterModule
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -12,10 +14,10 @@ import {NgForOf} from '@angular/common';
 export class Catalogue {
 
   navItems = [
-    { name: 'Home', active: false },
+    { name: 'Home',  route: '/',active: false },
     { name: 'About', active: false },
     { name: 'Contact', active: false },
-    { name: 'Profile', active: false }
+    { name: 'Profil',route: 'profil', active: false }
   ];
 
   onNavItemClick(item: any, event: Event) {

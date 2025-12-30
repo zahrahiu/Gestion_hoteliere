@@ -6,23 +6,17 @@ import {Register} from './register/register';
 import {Catalogue} from './catalogue/catalogue';
 import {ProfileComponent} from '../app/components/client/profil-client/profil-client';
 
-import {ClientDashboardComponent} from './components/client/client-dashboard/client-dashboard';
-
 export const routes: Routes = [
     { path: '', component: HomeComponent } ,
     { path: 'login', component: LoginComponent },
     { path: 'register', component: Register },
     { path: 'catalogue', component: Catalogue },
-  { path: 'profil', component: ProfileComponent },
+  { path: 'catalogue/profil', component: ProfileComponent },
 
 
   {
     path: 'manager',
     loadComponent: () => import('./components/manager/manager-dashboard/manager-dashboard').then(m => m.ManagerDashboardComponent)
-  },
-  {
-    path: 'client',
-    loadComponent: () => import('./components/client/client-dashboard/client-dashboard').then(m => m.ClientDashboardComponent)
   },
 
   // Wildcard route
