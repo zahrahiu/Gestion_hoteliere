@@ -5,6 +5,7 @@ import { LoginComponent } from './login.component/login.component';
 import {Register} from './register/register';
 import {Catalogue} from './catalogue/catalogue';
 import {ProfileComponent} from '../app/components/client/profil-client/profil-client';
+import {ProfilManager} from './components/manager/profil-manager/profil-manager';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent } ,
@@ -12,6 +13,7 @@ export const routes: Routes = [
     { path: 'register', component: Register },
     { path: 'catalogue', component: Catalogue },
   { path: 'catalogue/profil', component: ProfileComponent },
+  { path: 'managerprofil', component: ProfilManager },
 
 
   {
