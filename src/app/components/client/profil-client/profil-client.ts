@@ -105,17 +105,32 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadUserData();
-    this.calculateUnreadNotifications();
+    const token = localStorage.getItem('token');
+    console.log('=== DEBUG TOKEN ===');
+    console.log('Token length:', token?.length);
+    console.log('Token first 50 chars:', token?.substring(0, 50));
+    console.log('Token exists:', !!token);
+
+    // Test token manually
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('Token payload:', payload);
+    }
+
     this.authService.getClientProfile().subscribe({
-      next: (client) => {
-        console.log('Client info loaded in profile:', client);
-        this.user = client as any;
-        this.profileForm.patchValue(this.user); // fill the form
+      next: (res) => {
+        console.log('✅ SUCCESS - Response:', res);
       },
-      error: (err) => console.error(err)
+      error: (err) => {
+        console.error('❌ ERROR - Full error:', err);
+        console.log('Status:', err.status);
+        console.log('Status Text:', err.statusText);
+        console.log('Error message:', err.message);
+        console.log('Error details:', err.error);
+      }
     });
   }
+
 
   loadUserData(): void {
     // Simuler le chargement des données
@@ -216,11 +231,9 @@ export class ProfileComponent implements OnInit {
     this.showModal = false;
 
     if (this.pendingAction === 'logout') {
-      // Logique de déconnexion
       console.log('Déconnexion...');
       this.showNotification('Déconnexion réussie!');
     } else if (this.pendingAction === 'deleteAccount') {
-      // Logique de suppression de compte
       console.log('Compte supprimé...');
       this.showNotification('Compte supprimé avec succès!');
     }
@@ -229,10 +242,7 @@ export class ProfileComponent implements OnInit {
   }
 
   showNotification(message: string): void {
-    // Simuler une notification
     alert(message);
 
-    // Dans une application réelle, vous utiliseriez un service de notifications
-    // this.notificationService.show(message);
   }
 }

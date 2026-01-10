@@ -29,41 +29,34 @@ export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  // Afficher ou cacher le mot de passe
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
 
-  // Gestion du clic sur un élément de navigation
   onNavItemClick(item: any, event: Event) {
     event.preventDefault();
     this.navItems.forEach(i => i.active = false);
     item.active = true;
   }
 
-  // Mot de passe oublié
   onForgotPassword(event: Event) {
     event.preventDefault();
     alert('Mot de passe oublié cliqué !');
   }
 
-  // Redirection vers la page d’inscription
   onSignUp(event: Event) {
     event.preventDefault();
     this.router.navigate(['/register']); //route register here
   }
 
-  // Login avec Google
   onGoogleLogin() {
     alert('Connexion Google cliquée !');
   }
 
-  // Login avec Facebook
   onFacebookLogin() {
     alert('Connexion Facebook cliquée !');
   }
 
-  // Soumission du formulaire de login
   async onSubmit() {
     this.isLoading = true;
     this.error = '';

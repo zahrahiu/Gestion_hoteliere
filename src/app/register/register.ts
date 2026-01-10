@@ -71,7 +71,6 @@ export class Register {
   }
 
 
-  // Social login placeholders
   onGoogleLogin() { console.log('Google register'); }
   onFacebookLogin() { console.log('Facebook register'); }
 
