@@ -70,26 +70,13 @@ export class LoginComponent {
 
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
-        // 1️⃣ Store JWT & roles already done f AuthService
-        // 2️⃣ Get client profile
-        this.authService.getClientProfile().subscribe({
-          next: (client) => {
-            console.log('Client profile:', client);
 
+        this.isLoading = false;
 
-            this.isLoading = false;
-
-            if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
-            else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
-            else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
-            else this.router.navigate(['/dashboard']);
-          },
-          error: (err) => {
-            console.error('Cannot load client profile', err);
-            this.isLoading = false;
-            this.error = 'Impossible de charger le profil client';
-          }
-        });
+        if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
+        else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
+        else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
+        else this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.isLoading = false;
