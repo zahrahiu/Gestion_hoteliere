@@ -18,7 +18,7 @@ export const routes: Routes = [
 
   {
     path: 'manager',
-    loadComponent: () => import('./components/manager/manager-dashboard/manager-dashboard').then(m => m.ManagerDashboardComponent)
+    loadComponent: () => import('./components/manager/profil-manager/profil-manager').then(m => m.ProfilManager)
   },
 
   // Wildcard route

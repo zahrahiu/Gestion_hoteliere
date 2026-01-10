@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class RoomService {
 
-  private apiUrl = 'http://localhost:8088/chambres';
+  private apiUrl = 'http://localhost:8093/rooms';
 
   constructor(private http: HttpClient) {}
 

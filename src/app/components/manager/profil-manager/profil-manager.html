@@ -294,30 +294,6 @@
       </div>
     </div>
 
-    <!-- ===== USERS ===== -->
-    <div class="content-section" *ngIf="activeSection==='users'">
-      <h1>Gestion des Users</h1>
-
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Email</th>
-          <th>Rôle</th>
-          <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>Ahmed</td>
-          <td>ahmed&#64;mail.com</td>
-          <td>Client</td>
-          <td><button class="btn-sm">Voir</button></td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
     <div class="content-section" *ngIf="activeSection==='rooms'">
 
       <div class="page-header">
@@ -325,7 +301,6 @@
         <button class="btn-sm create-room" (click)="openCreateRoomModal()">Créer Room</button>
       </div>
 
-      <!-- ===== ROOMS TABLE ===== -->
       <!-- ===== ROOMS TABLE ===== -->
       <div class="rooms-table">
         <table>
@@ -371,6 +346,8 @@
         </table>
       </div>
     </div>
+
+
     <!-- ===== CREATE ROOM MODAL ===== -->
     <div class="modal" *ngIf="createRoomModalOpen">
       <div class="modal-overlay" (click)="closeCreateRoomModal()"></div>
@@ -421,98 +398,6 @@
       <div class="page-header">
         <h1><i class="fas fa-calendar-check"></i> Réservations</h1>
       </div>
-
-      <!-- ===== FILTERS ===== -->
-      <div class="reservation-filters">
-        <input type="text" placeholder="Nom du client">
-        <input type="date">
-        <select>
-          <option>Tous les statuts</option>
-          <option>Confirmée</option>
-          <option>En attente</option>
-          <option>Annulée</option>
-        </select>
-      </div>
-
-      <!-- ===== RESERVATIONS TABLE ===== -->
-      <div class="reservation-table">
-
-        <table>
-          <thead>
-          <tr>
-            <th>Client</th>
-            <th>Chambre</th>
-            <th>Date Arrivée</th>
-            <th>Date Départ</th>
-            <th>Statut</th>
-            <th>Prix</th>
-            <th>Action</th>
-          </tr>
-          </thead>
-
-          <tbody>
-          <tr>
-            <td>Ahmed El Amrani</td>
-            <td>101</td>
-            <td>10/06/2025</td>
-            <td>15/06/2025</td>
-            <td><span class="status confirmed">Confirmée</span></td>
-            <td>4 500 MAD</td>
-            <td>
-              <button class="btn-sm view">Voir</button>
-              <button class="btn-sm cancel">Annuler</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Salma Benali</td>
-            <td>203</td>
-            <td>12/06/2025</td>
-            <td>14/06/2025</td>
-            <td><span class="status pending">En attente</span></td>
-            <td>2 800 MAD</td>
-            <td>
-              <button class="btn-sm view">Voir</button>
-              <button class="btn-sm cancel">Annuler</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Youssef Rahimi</td>
-            <td>305</td>
-            <td>01/07/2025</td>
-            <td>05/07/2025</td>
-            <td><span class="status cancelled">Annulée</span></td>
-            <td>0 MAD</td>
-            <td>
-              <button class="btn-sm view">Voir</button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-
-      </div>
-    </div>
-
-
-    <!-- report -->
-    <div class="report-container">
-      <h3>Rapports</h3>
-      <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
-        <label for="reportFile">Choisir un fichier</label>
-        <div class="file-upload-wrapper">
-          <input
-            type="file"
-            id="reportFile"
-            class="file-upload-input"
-            (change)="onFileSelected($event)">
-          <div class="file-upload-label">
-            <i class="fas fa-upload"></i>
-            <span>{{ selectedFileName }}</span>
-          </div>
-        </div>
-        <button type="submit" class="btn-primary">Envoyer</button>
-      </form>
     </div>
 
     <!-- Settings Section -->
@@ -704,6 +589,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- Confirmation Modal -->
 <div class="modal" *ngIf="showModal">
