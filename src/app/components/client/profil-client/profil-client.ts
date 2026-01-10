@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {AuthService} from '../../../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -90,7 +91,7 @@ export class ProfileComponent implements OnInit {
   imagePreview: string | null = null;
   originalFormData: any;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
@@ -106,6 +107,14 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserData();
     this.calculateUnreadNotifications();
+    this.authService.getClientProfile().subscribe({
+      next: (client) => {
+        console.log('Client info loaded in profile:', client);
+        this.user = client as any;
+        this.profileForm.patchValue(this.user); // fill the form
+      },
+      error: (err) => console.error(err)
+    });
   }
 
   loadUserData(): void {

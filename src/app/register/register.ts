@@ -52,10 +52,13 @@ export class Register {
     this.error = '';
 
     this.authService.register(this.firstName, this.lastName, this.email, this.password).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        console.log('User registered successfully:', response);
-        this.router.navigate(['/login']);
+      next: () => {
+        this.authService.login(this.email, this.password).subscribe({
+          next: (res) => {
+            this.router.navigate(['/login']); // user redirected
+          },
+          error: (err) => this.error = 'Login failed after registration'
+        });
       },
       error: (err) => {
         this.isLoading = false;
@@ -64,7 +67,9 @@ export class Register {
         else this.error = 'Server error, please try again';
       }
     });
+
   }
+
 
   // Social login placeholders
   onGoogleLogin() { console.log('Google register'); }

@@ -19,6 +19,7 @@ export class LoginComponent {
   isLoading = false;
   error = '';
 
+  // Navigation du site
   navItems = [
     { name: 'Home', active: false },
     { name: 'About', active: false },
@@ -28,53 +29,77 @@ export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
+  // Afficher ou cacher le mot de passe
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
 
+  // Gestion du clic sur un élément de navigation
   onNavItemClick(item: any, event: Event) {
     event.preventDefault();
     this.navItems.forEach(i => i.active = false);
     item.active = true;
   }
 
-  onSignUp(event: Event) {
-    event.preventDefault();
-    this.router.navigate(['/register']);
-  }
-
+  // Mot de passe oublié
   onForgotPassword(event: Event) {
     event.preventDefault();
     alert('Mot de passe oublié cliqué !');
   }
 
-  onGoogleLogin() { console.log('Google login clicked'); }
-  onFacebookLogin() { console.log('Facebook login clicked'); }
+  // Redirection vers la page d’inscription
+  onSignUp(event: Event) {
+    event.preventDefault();
+    this.router.navigate(['/register']); //route register here
+  }
 
-  onSubmit() {
-    if (!this.email || !this.password) {
-      this.error = 'Veuillez remplir tous les champs';
-      return;
-    }
+  // Login avec Google
+  onGoogleLogin() {
+    alert('Connexion Google cliquée !');
+  }
 
+  // Login avec Facebook
+  onFacebookLogin() {
+    alert('Connexion Facebook cliquée !');
+  }
+
+  // Soumission du formulaire de login
+  async onSubmit() {
     this.isLoading = true;
     this.error = '';
 
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
-        this.isLoading = false;
+        // 1️⃣ Store JWT & roles already done f AuthService
+        // 2️⃣ Get client profile
+        this.authService.getClientProfile().subscribe({
+          next: (client) => {
+            console.log('Client profile:', client);
 
-        // Redirection selon rôle
-        if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
-        else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
-        else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
-        else this.router.navigate(['/dashboard']);
+
+            this.isLoading = false;
+
+            if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
+            else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
+            else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
+            else this.router.navigate(['/dashboard']);
+          },
+          error: (err) => {
+            console.error('Cannot load client profile', err);
+            this.isLoading = false;
+            this.error = 'Impossible de charger le profil client';
+          }
+        });
       },
       error: (err) => {
         this.isLoading = false;
         if (err.status === 401) this.error = 'Email ou mot de passe incorrect';
-        else this.error = 'Impossible de se connecter au serveur';
+        else if (err.status === 0) this.error = 'Impossible de se connecter au serveur. Assurez-vous que Spring Boot est actif';
+        else this.error = 'Une erreur est survenue. Veuillez réessayer';
       }
     });
   }
+
+
+
 }
