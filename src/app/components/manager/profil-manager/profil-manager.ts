@@ -3,6 +3,7 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {NgClass, NgForOf, NgIf, NgStyle} from "@angular/common";
 import { HttpClientModule } from '@angular/common/http';
 import {RoomService} from '../../../services/room.service';
+import {UserProfileService} from '../../../services/user-profile.service';
 
 @Component({
   selector: 'app-profil-manager',
@@ -102,7 +103,11 @@ export class ProfilManager implements OnInit{
   imagePreview: string | null = null;
   originalFormData: any;
 
-  constructor(private fb: FormBuilder, private roomService: RoomService) {
+  constructor(
+    private fb: FormBuilder,
+    private roomService: RoomService,
+    private userProfileService: UserProfileService
+  ) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
@@ -120,7 +125,30 @@ export class ProfilManager implements OnInit{
   }
 
   ngOnInit() {
+    this.loadMyProfile();
     this.loadRooms();
+  }
+
+  loadMyProfile() {
+    console.log('CALLING /me ...');
+
+    this.userProfileService.getMyProfile().subscribe({
+      next: profile => {
+        console.log('PROFILE OK', profile);
+
+        this.profileForm.patchValue({
+          nom: profile.nom,
+          prenom: profile.prenom,
+          email: profile.email,
+          tel: profile.tel,
+          cne: profile.cne,
+          dateNaissance: profile.dateNaissance
+        });
+      },
+      error: err => {
+        console.error('ERROR PROFILE', err);
+      }
+    });
   }
 
   loadRooms() {
