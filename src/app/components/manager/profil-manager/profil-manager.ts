@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {NgForOf, NgIf, NgStyle} from "@angular/common";
+import {NgClass, NgForOf, NgIf, NgStyle} from "@angular/common";
+import { HttpClientModule } from '@angular/common/http';
+import {RoomService} from '../../../services/room.service';
 
 @Component({
   selector: 'app-profil-manager',
@@ -9,12 +11,18 @@ import {NgForOf, NgIf, NgStyle} from "@angular/common";
     NgForOf,
     NgIf,
     ReactiveFormsModule,
-    NgStyle
+    NgStyle,
+    HttpClientModule,
+    NgClass
   ],
   templateUrl: './profil-manager.html',
   styleUrl: './profil-manager.css',
 })
 export class ProfilManager implements OnInit{
+  rooms: any[] = [];
+  selectedRoom: any = null;
+  createRoomModalOpen = false;
+  isEditMode = false;
 
   activeSection = 'profile';
   unreadNotifications = 3;
@@ -94,7 +102,7 @@ export class ProfilManager implements OnInit{
   imagePreview: string | null = null;
   originalFormData: any;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private roomService: RoomService) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
@@ -111,10 +119,16 @@ export class ProfilManager implements OnInit{
     });
   }
 
-  ngOnInit(): void {
-    this.loadUserData();
-    this.calculateUnreadNotifications();
+  ngOnInit() {
+    this.loadRooms();
   }
+
+  loadRooms() {
+    this.roomService.getRooms().subscribe(data => {
+      this.rooms = data;
+    });
+  }
+
 
   loadUserData(): void {
     // Simuler le chargement des données
@@ -224,9 +238,10 @@ export class ProfilManager implements OnInit{
   }
 
 
-  createRoomModalOpen = false;
 
   openCreateRoomModal() {
+    this.isEditMode = false;
+    this.selectedRoom = {};
     this.createRoomModalOpen = true;
   }
 
@@ -234,10 +249,35 @@ export class ProfilManager implements OnInit{
     this.createRoomModalOpen = false;
   }
 
-  submitCreateRoom(form: any) {
-    console.log('Nouvelle chambre créée:', form);
-    this.closeCreateRoomModal();
+  submitCreateRoom(room: any) {
+    this.roomService.createRoom(room).subscribe(() => {
+      this.loadRooms();
+      this.closeCreateRoomModal();
+    });
   }
+
+  editRoom(room: any) {
+    this.isEditMode = true;
+    this.selectedRoom = {...room};
+    this.createRoomModalOpen = true;
+  }
+
+  updateRoom() {
+    this.roomService.updateRoom(this.selectedRoom.id, this.selectedRoom)
+      .subscribe(() => {
+        this.loadRooms();
+        this.closeCreateRoomModal();
+      });
+  }
+
+  deleteRoom(id: number) {
+    if (confirm('Voulez-vous supprimer cette chambre ?')) {
+      this.roomService.deleteRoom(id).subscribe(() => {
+        this.loadRooms();
+      });
+    }
+  }
+
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];

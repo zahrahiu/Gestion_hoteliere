@@ -326,91 +326,92 @@
       </div>
 
       <!-- ===== ROOMS TABLE ===== -->
+      <!-- ===== ROOMS TABLE ===== -->
       <div class="rooms-table">
         <table>
           <thead>
           <tr>
             <th>Numéro</th>
             <th>Type</th>
-            <th>Prix / Nuit</th>
-            <th>Statut</th>
+            <th>Prix</th>
+            <th>État</th>
+            <th>Description</th>
+            <th>Images</th>
+            <th>Taux</th>
+            <th>Lit (L x l)</th>
             <th>Action</th>
           </tr>
           </thead>
-
           <tbody>
-          <tr>
-            <td>101</td>
-            <td>Single</td>
-            <td>450 MAD</td>
-            <td><span class="status available">Disponible</span></td>
+          <tr *ngFor="let room of rooms">
+            <td>{{ room.numero }}</td>
+            <td>{{ room.type }}</td>
+            <td>{{ room.prix }} MAD</td>
             <td>
-              <button class="btn-sm edit">Éditer</button>
-              <button class="btn-sm delete">Supprimer</button>
+          <span class="status" [ngClass]="{
+            'available': room.etat === 'Disponible',
+            'occupied': room.etat === 'Occupée',
+            'maintenance': room.etat === 'Maintenance'
+          }">
+            {{ room.etat }}
+          </span>
             </td>
-          </tr>
-
-          <tr>
-            <td>203</td>
-            <td>Double</td>
-            <td>800 MAD</td>
-            <td><span class="status occupied">Occupée</span></td>
+            <td>{{ room.description }}</td>
             <td>
-              <button class="btn-sm edit">Éditer</button>
-              <button class="btn-sm delete">Supprimer</button>
+              <img *ngFor="let img of room.image_urls" [src]="img" alt="Room Image" class="room-thumb">
             </td>
-          </tr>
-
-          <tr>
-            <td>305</td>
-            <td>Suite</td>
-            <td>1 500 MAD</td>
-            <td><span class="status maintenance">Maintenance</span></td>
+            <td>{{ room.taux }} %</td>
+            <td>{{ room.lit_long }} x {{ room.lit_large }} cm</td>
             <td>
-              <button class="btn-sm edit">Éditer</button>
-              <button class="btn-sm delete">Supprimer</button>
+              <button class="btn-sm edit" (click)="editRoom(room)">Éditer</button>
+              <button class="btn-sm delete" (click)="deleteRoom(room.id)">Supprimer</button>
             </td>
           </tr>
           </tbody>
         </table>
       </div>
     </div>
-
     <!-- ===== CREATE ROOM MODAL ===== -->
     <div class="modal" *ngIf="createRoomModalOpen">
       <div class="modal-overlay" (click)="closeCreateRoomModal()"></div>
       <div class="modal-content">
         <span class="close" (click)="closeCreateRoomModal()">&times;</span>
-        <h2>Créer une nouvelle chambre</h2>
-        <form #roomForm="ngForm" (ngSubmit)="submitCreateRoom(roomForm.value)">
-          <label>Numéro</label>
-          <input type="text" placeholder="Numéro de chambre">
+        <h2>{{ isEditMode ? 'Modifier une chambre' : 'Créer une nouvelle chambre' }}</h2>
 
-          <label>Type</label>
-          <select>
+        <form (ngSubmit)="isEditMode ? updateRoom() : submitCreateRoom(selectedRoom)">
+
+          <!-- Basic info -->
+          <input [(ngModel)]="selectedRoom.numero" name="numero" placeholder="Numéro">
+          <select [(ngModel)]="selectedRoom.type" name="type">
             <option>Single</option>
             <option>Double</option>
             <option>Suite</option>
           </select>
-
-          <label>Prix / Nuit</label>
-          <input type="number" placeholder="Prix en MAD">
-
-          <label>État</label>
-          <select>
+          <input type="number" [(ngModel)]="selectedRoom.prix" name="prix" placeholder="Prix (MAD)">
+          <select [(ngModel)]="selectedRoom.etat" name="etat">
             <option>Disponible</option>
             <option>Occupée</option>
             <option>Maintenance</option>
           </select>
 
-          <label>Description</label>
-          <textarea placeholder="Description de la chambre"></textarea>
+          <!-- Nouveau champs -->
+          <textarea [(ngModel)]="selectedRoom.description" name="description" placeholder="Description"></textarea>
+          <input type="number" [(ngModel)]="selectedRoom.taux" name="taux" placeholder="Taux (%)">
+          <input type="number" [(ngModel)]="selectedRoom.lit_long" name="lit_long" placeholder="Longueur lit (cm)">
+          <input type="number" [(ngModel)]="selectedRoom.lit_large" name="lit_large" placeholder="Largeur lit (cm)">
 
-          <label>Images</label>
-          <input type="file" multiple accept="image/*">
+          <label>Image de la chambre</label>
+          <input type="file" (change)="onImageSelected($event)" accept="image/*">
+          <div *ngIf="imagePreview">
+            <p>Aperçu:</p>
+            <img [src]="imagePreview" alt="Room Image" style="max-width:200px; max-height:150px;">
+          </div>
 
-          <button type="submit" class="btn-sm create-room">Créer Room</button>
+          <button type="submit" class="btn-sm create-room">
+            {{ isEditMode ? 'Modifier' : 'Créer' }}
+          </button>
         </form>
+
       </div>
     </div>
 
