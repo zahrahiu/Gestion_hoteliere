@@ -1,32 +1,52 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8070/v1';
+
+  private apiUrl = 'http://localhost:8070/v1/users';
   private currentUserSubject: BehaviorSubject<any>;
   public currentUser$: Observable<any>;
+  private isBrowser: boolean;
 
-  constructor(private http: HttpClient, private router: Router) {
-    this.currentUserSubject = new BehaviorSubject<any>(null);
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+
+    this.currentUserSubject = new BehaviorSubject<any>(
+      this.isBrowser ? this.getUserFromStorage() : null
+    );
+
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
+  // ===================== AUTH =====================
+
   login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/users/login`, { email, password })
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         tap(response => {
-          localStorage.setItem('token', response.accessToken);
-          localStorage.setItem('user', JSON.stringify({
+          const userData = {
+            id: response.id,
             email: response.email,
-            roles: response.roles
-          }));
-          this.currentUserSubject.next(response);
+            firstName: response.firstName,
+            lastName: response.lastName,
+            roles: response.roles || [],
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken
+          };
+
+          this.saveUserData(userData);
+          this.currentUserSubject.next(userData);
         })
       );
   }
@@ -34,23 +54,28 @@ export class AuthService {
 
 
   register(firstName: string, lastName: string, email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/users/register`, {
+    return this.http.post<any>(`${this.apiUrl}/register`, {
       firstName,
       lastName,
       email,
       password,
-      role: ["CLIENT"] // backend kayforce role CLIENT
+      role: ['CLIENT']
     });
   }
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  logout(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+    }
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
 
-  getCurrentUser() {
+  // ===================== USER =====================
+
+  getCurrentUser(): any {
     return this.currentUserSubject.value;
   }
 
@@ -63,20 +88,34 @@ export class AuthService {
 
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return this.isBrowser && !!localStorage.getItem('accessToken');
   }
 
-  refreshToken(): Observable<any> {
-    const token = localStorage.getItem('token');
-    return this.http.post<any>(`${this.apiUrl}/users/refresh-token`, { token })
-      .pipe(
-        tap(response => {
-          localStorage.setItem('token', response.accessToken);
-        })
-      );
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.roles?.includes('ADMIN') || false;
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.isBrowser ? localStorage.getItem('accessToken') : null;
+  }
+
+  // ===================== STORAGE =====================
+
+  private saveUserData(user: any): void {
+    if (!this.isBrowser) return;
+
+    localStorage.setItem('accessToken', user.accessToken);
+    if (user.refreshToken) {
+      localStorage.setItem('refreshToken', user.refreshToken);
+    }
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  private getUserFromStorage(): any {
+    if (!this.isBrowser) return null;
+
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
   }
 }

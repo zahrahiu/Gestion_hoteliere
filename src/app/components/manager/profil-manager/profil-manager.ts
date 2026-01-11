@@ -12,7 +12,7 @@ import {UserProfileService} from '../../../services/user-profile.service';
     NgForOf,
     NgIf,
     ReactiveFormsModule,
-    NgStyle,
+    
     HttpClientModule,
     NgClass
   ],
