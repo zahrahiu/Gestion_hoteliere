@@ -37,115 +37,20 @@
   <div class="container">
     <h2 class="section-title">ALL ROOMS & SUITES</h2>
     <div class="catalogue-grid">
-
-      <!-- Deluxe Room -->
-      <div class="catalogue-card"
-           (mouseenter)="onRoomHover(1, true)"
-           (mouseleave)="onRoomHover(1, false)">
-        <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
-             alt="Deluxe Room"
-             class="catalogue-img">
+      <div class="catalogue-card" *ngFor="let room of rooms">
+        <img [src]="'http://localhost:8093/uploads/' + room.image" [alt]="room.type" class="catalogue-img">
         <div class="catalogue-content">
-          <h3 class="room-title">Deluxe Room</h3>
-          <div class="room-price">$499 / night</div>
-          <p class="room-desc">Spacious room with king-size bed, panoramic ocean view, and luxury amenities.</p>
+          <h3 class="room-title">{{ room.type }}</h3>
+          <div class="room-price">${{ room.prix }} / night</div>
+          <p class="room-desc">{{ room.description }}</p>
           <div class="room-features">
-            <span class="room-feature"><i class="fas fa-bed"></i> King Bed</span>
-            <span class="room-feature"><i class="fas fa-ruler-combined"></i> 45 m²</span>
-            <span class="room-feature"><i class="fas fa-user-friends"></i> 2 Guests</span>
+            <span class="room-feature"><i class="fas fa-bed"></i> {{ room.lit_long }}x{{ room.lit_large }} Bed</span>
           </div>
-          <a (click)="openBookingModal()" class="room-link" style="cursor: pointer">
+          <a (click)="openBookingModal(room)" class="room-link" style="cursor: pointer">
             VIEW DETAILS <i class="fas fa-arrow-right"></i>
           </a>
         </div>
       </div>
-
-      <!-- Executive Suite -->
-      <div class="catalogue-card"
-           (mouseenter)="onRoomHover(2, true)"
-           (mouseleave)="onRoomHover(2, false)">
-        <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
-             alt="Executive Suite"
-             class="catalogue-img">
-        <div class="catalogue-content">
-          <h3 class="room-title">Executive Suite</h3>
-          <div class="room-price">$799 / night</div>
-          <p class="room-desc">Luxurious suite with separate living area, private balcony, and butler service.</p>
-          <div class="room-features">
-            <span class="room-feature"><i class="fas fa-bed"></i> King Bed</span>
-            <span class="room-feature"><i class="fas fa-ruler-combined"></i> 65 m²</span>
-            <span class="room-feature"><i class="fas fa-user-friends"></i> 3 Guests</span>
-          </div>
-          <a (click)="openBookingModal()" class="room-link" style="cursor: pointer">
-            VIEW DETAILS <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
-      <!-- Presidential Suite -->
-      <div class="catalogue-card"
-           (mouseenter)="onRoomHover(3, true)"
-           (mouseleave)="onRoomHover(3, false)">
-        <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
-             alt="Presidential Suite"
-             class="catalogue-img">
-        <div class="catalogue-content">
-          <h3 class="room-title">Presidential Suite</h3>
-          <div class="room-price">$1,499 / night</div>
-          <p class="room-desc">The ultimate luxury experience with private terrace, jacuzzi, and 24/7 concierge.</p>
-          <div class="room-features">
-            <span class="room-feature"><i class="fas fa-bed"></i> King Bed</span>
-            <span class="room-feature"><i class="fas fa-ruler-combined"></i> 120 m²</span>
-            <span class="room-feature"><i class="fas fa-user-friends"></i> 4 Guests</span>
-          </div>
-          <a (click)="openBookingModal()" class="room-link" style="cursor: pointer">
-            VIEW DETAILS <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
-      <div class="catalogue-card"
-           (mouseenter)="onRoomHover(3, true)"
-           (mouseleave)="onRoomHover(3, false)">
-        <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
-             alt="Presidential Suite"
-             class="catalogue-img">
-        <div class="catalogue-content">
-          <h3 class="room-title">Presidential Suite</h3>
-          <div class="room-price">$1,499 / night</div>
-          <p class="room-desc">The ultimate luxury experience with private terrace, jacuzzi, and 24/7 concierge.</p>
-          <div class="room-features">
-            <span class="room-feature"><i class="fas fa-bed"></i> King Bed</span>
-            <span class="room-feature"><i class="fas fa-ruler-combined"></i> 120 m²</span>
-            <span class="room-feature"><i class="fas fa-user-friends"></i> 4 Guests</span>
-          </div>
-          <a (click)="openBookingModal()" class="room-link" style="cursor: pointer">
-            VIEW DETAILS <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
-      <div class="catalogue-card"
-           (mouseenter)="onRoomHover(3, true)"
-           (mouseleave)="onRoomHover(3, false)">
-        <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
-             alt="Presidential Suite"
-             class="catalogue-img">
-        <div class="catalogue-content">
-          <h3 class="room-title">Presidential Suite</h3>
-          <div class="room-price">$1,499 / night</div>
-          <p class="room-desc">The ultimate luxury experience with private terrace, jacuzzi, and 24/7 concierge.</p>
-          <div class="room-features">
-            <span class="room-feature"><i class="fas fa-bed"></i> King Bed</span>
-            <span class="room-feature"><i class="fas fa-ruler-combined"></i> 120 m²</span>
-            <span class="room-feature"><i class="fas fa-user-friends"></i> 4 Guests</span>
-          </div>
-          <a (click)="openBookingModal()" class="room-link" style="cursor: pointer">
-            VIEW DETAILS <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>

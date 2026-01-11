@@ -22,7 +22,7 @@ export class RoomService {
   }
 
   getRooms(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl, this.getHeaders());
+    return this.http.get<any[]>(this.apiUrl); // bl token, since GET rooms public
   }
 
   createRoom(room: any): Observable<any> {
