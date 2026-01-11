@@ -70,7 +70,7 @@ export class UserListComponent implements OnInit {
 
     this.userService.deleteUser(user.id).subscribe({
       next: () => {
-        this.users = this.users.filter(u => u.id !== user.id); // UI rapide
+        this.users = this.users.filter(u => u.id !== user.id);
         this.loading = false;
         this.showSuccess('Utilisateur supprimé avec succès');
       },
@@ -93,7 +93,7 @@ export class UserListComponent implements OnInit {
 
     this.userService.toggleUserStatus(user.id, newStatus).subscribe({
       next: () => {
-        user.active = newStatus; // update local
+        user.active = newStatus;
         this.showSuccess(`Utilisateur ${action} avec succès`);
       },
       error: () => {
@@ -107,8 +107,10 @@ export class UserListComponent implements OnInit {
     return {
       ADMIN: 'role-admin',
       MANAGER: 'role-manager',
-      STAFF: 'role-staff',
-      CLIENT: 'role-client'
+      HOUSEKEEPING: 'role-housekeeping',
+      RECEPTIONNISTE: 'role-receptionniste',
+      MAINTENANCE: 'role-maintenance',
+      COMPTABLE: 'role-comptable'
     }[role] || 'role-default';
   }
 
@@ -116,8 +118,10 @@ export class UserListComponent implements OnInit {
     return {
       ADMIN: 'Admin',
       MANAGER: 'Manager',
-      STAFF: 'Staff',
-      CLIENT: 'Client'
+      HOUSEKEEPING: 'Housekeeping',
+      RECEPTIONNISTE: 'Réceptionniste',
+      MAINTENANCE: 'Maintenance',
+      COMPTABLE: 'Comptable'
     }[role] || role;
   }
 

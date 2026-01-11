@@ -2,14 +2,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -28,9 +27,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    MatTableModule,
     MatSnackBarModule,
-    MatDialogModule,
     MatDividerModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
@@ -43,214 +40,149 @@ import { MatTabsModule } from '@angular/material/tabs';
   styleUrls: ['./roles.css']
 })
 export class RolesComponent implements OnInit {
-  // Section Rôles
+
   roles: any[] = [];
-  newRoleName = '';
-  newRoleDescription = '';
-  
-  // Section Permissions
   permissions: any[] = [];
-  newPermissionName = '';
-  newPermissionDescription = '';
-  
-  // Section Assignation
+
   selectedRole: any = null;
   selectedPermission: any = null;
-  
-  loading = false;
-  activeTab = 'roles'; // 'roles', 'permissions', 'assign'
 
-  constructor(
-    private http: HttpClient,
-    private snackBar: MatSnackBar
-  ) {}
+  newRoleName = '';
+  newPermissionName = '';
+
+  loading = false;
+  activeTab = 0;
+
+  constructor(private http: HttpClient, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.loadAllData();
   }
 
-  // ================ CHARGEMENT DES DONNÉES ================
-// ================ CHARGEMENT DES DONNÉES ================
-loadAllData(): void {
-  this.loading = true;
-  
-  // CORRECTION 1 : Utilise 'accessToken' au lieu de 'token'
-  const token = localStorage.getItem('accessToken'); // ← CHANGE ICI
-  console.log('🔑 Token récupéré:', token ? 'OUI' : 'NON');
-  
-  if (!token) {
-    this.snackBar.open('❌ Pas connecté! Token manquant.', 'OK', { duration: 3000 });
-    this.loading = false;
-    return;
+  // ================== UTILS ==================
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('accessToken');
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  // CORRECTION 2 : Log le début du token pour vérifier
-  console.log('Token (début):', token.substring(0, 30) + '...');
+  // ================== LOAD ==================
+  loadAllData(): void {
+    this.loading = true;
+    const headers = this.getHeaders();
 
-  // Appelle l'API pour les rôles
-  this.http.get('http://localhost:8070/v1/roles', {
-    headers: {
-      'Authorization': 'Bearer ' + token
-    }
-  }).subscribe({
-    next: (res: any) => {
-      console.log('✅ SUCCÈS - Rôles reçus:', res);
-      this.roles = res;
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('❌ ERREUR - Détails:', err);
-      if (err.status === 401) {
-        this.snackBar.open('Token expiré ou invalide! Reconnecte-toi.', 'OK', { duration: 3000 });
-      } else {
-        this.snackBar.open('Erreur: ' + err.message, 'OK', { duration: 3000 });
-      }
-      this.loading = false;
-    }
-  });
+    this.http.get<any[]>('http://localhost:8070/v1/roles', { headers }).subscribe({
+      next: res => {
+        this.roles = res;
+        this.selectedRole = res.length ? res[0] : null;
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
 
-  // Appelle l'API pour les permissions
-  this.http.get('http://localhost:8070/v1/permissions', {
-    headers: {
-      'Authorization': 'Bearer ' + token
-    }
-  }).subscribe({
-    next: (res: any) => {
-      console.log('✅ Permissions reçues:', res);
-      this.permissions = res;
-    },
-    error: (err) => {
-      console.error('Erreur permissions:', err);
-    }
-  });
-}
-  // ================ GESTION DES RÔLES ================
+    this.http.get<any[]>('http://localhost:8070/v1/permissions', { headers }).subscribe({
+      next: res => this.permissions = res
+    });
+  }
+
+  // ================== ROLE ==================
   createRole(): void {
-    if (!this.newRoleName.trim()) {
-      this.snackBar.open('Le nom du rôle est requis', 'Fermer', { duration: 3000 });
-      return;
-    }
+    if (!this.newRoleName.trim()) return;
 
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const headers = this.getHeaders();
+    const params = new HttpParams().set('name', this.newRoleName.toUpperCase());
 
-    this.http.post(`http://localhost:8070/v1/roles?name=${this.newRoleName}`, {}, { headers })
-      .subscribe({
-        next: (response: any) => {
-          this.snackBar.open('Rôle créé avec succès', 'Fermer', { duration: 3000 });
-          this.loadAllData();
-          this.newRoleName = '';
-          this.newRoleDescription = '';
-          this.activeTab = 'roles';
-        },
-        error: (err) => {
-          console.error('Erreur création rôle:', err);
-          this.snackBar.open('Erreur lors de la création du rôle', 'Fermer', { duration: 3000 });
-        }
-      });
+    this.http.post<any>('http://localhost:8070/v1/roles', null, { headers, params }).subscribe({
+      next: role => {
+        this.roles.push(role);
+        this.newRoleName = '';
+        this.snackBar.open('✅ Rôle créé', 'Fermer', { duration: 3000 });
+      }
+    });
   }
 
-  deleteRole(roleId: number): void {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce rôle?')) return;
+  deleteRole(role: any): void {
+    if (!confirm(`Supprimer le rôle ${role.name} ?`)) return;
 
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const headers = this.getHeaders();
 
-    this.http.delete(`http://localhost:8070/v1/roles/${roleId}`, { headers })
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Rôle supprimé avec succès', 'Fermer', { duration: 3000 });
-          this.loadAllData();
-        },
-        error: (err) => {
-          console.error('Erreur suppression rôle:', err);
-          this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 });
-        }
-      });
+    this.http.delete(
+      `http://localhost:8070/v1/roles/${encodeURIComponent(role.name)}`,
+      { headers, responseType: 'text' as 'json' }
+    ).subscribe({
+      next: () => {
+        this.roles = this.roles.filter(r => r.id !== role.id);
+        this.selectedRole = this.roles.length ? this.roles[0] : null;
+        this.snackBar.open('✅ Rôle supprimé', 'Fermer', { duration: 3000 });
+      }
+    });
   }
 
-  // ================ GESTION DES PERMISSIONS ================
+  // ================== PERMISSION ==================
   createPermission(): void {
-    if (!this.newPermissionName.trim()) {
-      this.snackBar.open('Le nom de la permission est requis', 'Fermer', { duration: 3000 });
-      return;
-    }
+    if (!this.newPermissionName.trim()) return;
 
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const headers = this.getHeaders();
+    const params = new HttpParams().set('name', this.newPermissionName.toUpperCase());
 
-    this.http.post(`http://localhost:8070/v1/permissions?name=${this.newPermissionName}`, {}, { headers })
-      .subscribe({
-        next: (response: any) => {
-          this.snackBar.open('Permission créée avec succès', 'Fermer', { duration: 3000 });
-          this.loadAllData();
-          this.newPermissionName = '';
-          this.newPermissionDescription = '';
-          this.activeTab = 'permissions';
-        },
-        error: (err) => {
-          console.error('Erreur création permission:', err);
-          this.snackBar.open('Erreur lors de la création de la permission', 'Fermer', { duration: 3000 });
-        }
-      });
+    this.http.post<any>('http://localhost:8070/v1/permissions', null, { headers, params }).subscribe({
+      next: perm => {
+        this.permissions.push(perm);
+        this.newPermissionName = '';
+        this.snackBar.open('✅ Permission créée', 'Fermer', { duration: 3000 });
+      }
+    });
   }
 
-  // ================ ASSIGNATION DES PERMISSIONS ================
+  deletePermission(permission: any): void {
+    const headers = this.getHeaders();
+
+    this.http.delete(
+      `http://localhost:8070/v1/permissions/${permission.id}`,
+      { headers, responseType: 'text' as 'json' }
+    ).subscribe({
+      next: () => {
+        this.permissions = this.permissions.filter(p => p.id !== permission.id);
+        this.snackBar.open('✅ Permission supprimée', 'Fermer', { duration: 3000 });
+      }
+    });
+  }
+
+  // ================== ASSIGN ==================
   assignPermissionToRole(): void {
-    if (!this.selectedRole || !this.selectedPermission) {
-      this.snackBar.open('Veuillez sélectionner un rôle et une permission', 'Fermer', { duration: 3000 });
-      return;
-    }
+    if (!this.selectedRole || !this.selectedPermission) return;
 
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const headers = this.getHeaders();
+    const params = new HttpParams().set('permissionName', this.selectedPermission.name);
 
-    const url = `http://localhost:8070/v1/roles/${this.selectedRole.name}/permissions?permissionName=${this.selectedPermission.name}`;
-
-    this.http.post(url, {}, { headers })
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Permission assignée avec succès', 'Fermer', { duration: 3000 });
-          this.loadAllData();
-          this.selectedPermission = null;
-        },
-        error: (err) => {
-          console.error('Erreur assignation:', err);
-          this.snackBar.open('Erreur lors de l\'assignation', 'Fermer', { duration: 3000 });
-        }
-      });
+    this.http.post(
+      `http://localhost:8070/v1/roles/${encodeURIComponent(this.selectedRole.name)}/permissions`,
+      null,
+      { headers, params, responseType: 'text' as 'json' }
+    ).subscribe({
+      next: () => {
+        this.selectedRole.permissions ??= [];
+        this.selectedRole.permissions.push(this.selectedPermission);
+        this.selectedPermission = null;
+        this.snackBar.open('✅ Permission assignée', 'Fermer', { duration: 3000 });
+      }
+    });
   }
 
-  removePermissionFromRole(permissionId: number): void {
+  // ================== REMOVE ==================
+  removePermissionFromRole(permission: any): void {
     if (!this.selectedRole) return;
 
-    // NOTE: Ton API ne supporte pas la suppression de permission d'un rôle
-    // Tu dois ajouter cette fonctionnalité dans le backend
-    this.snackBar.open('Fonctionnalité à implémenter dans le backend', 'Fermer', { duration: 3000 });
-  }
+    const headers = this.getHeaders();
 
-  // ================ UTILITAIRES ================
-  getUsersCount(users: any[]): number {
-    return users ? users.length : 0;
-  }
-
-  isDeletable(role: any): boolean {
-    return role.users && role.users.length === 0;
-  }
-
-  selectRole(role: any): void {
-    this.selectedRole = role;
-  }
-
-  getRolePermissions(role: any): any[] {
-    return role.permissions || [];
-  }
-
-  hasPermission(role: any, permissionId: number): boolean {
-    return role.permissions?.some((p: any) => p.id === permissionId) || false;
-  }
-
-  setActiveTab(tab: string): void {
-    this.activeTab = tab;
+    this.http.delete(
+      `http://localhost:8070/v1/roles/${encodeURIComponent(this.selectedRole.name)}/permissions/${encodeURIComponent(permission.name)}`,
+      { headers, responseType: 'text' as 'json' }
+    ).subscribe({
+      next: () => {
+        this.selectedRole.permissions =
+          this.selectedRole.permissions.filter((p: any) => p.name !== permission.name);
+        this.snackBar.open('✅ Permission retirée', 'Fermer', { duration: 3000 });
+      }
+    });
   }
 }
