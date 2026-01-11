@@ -1,13 +1,13 @@
 // src/app/components/catalogue/catalogue.component.ts
 import { Component, OnInit } from '@angular/core';
-import { NgForOf } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import {CommonModule, NgForOf, NgIf} from '@angular/common';
+import {Router, RouterModule} from '@angular/router';
 import { RoomService } from '../services/room.service';
 
 @Component({
   selector: 'app-catalogue',
   standalone: true,
-  imports: [NgForOf, RouterModule],
+  imports: [NgForOf, NgIf, CommonModule, RouterModule],
   templateUrl: './catalogue.html',
   styleUrls: ['./catalogue.css'],
 })
@@ -20,42 +20,23 @@ export class Catalogue implements OnInit {
     { name: 'Profile', route: '/profil', active: false }
   ];
 
-  rooms: any[] = []; // array dyal rooms
+  rooms: any[] = [];
+  loading = true;
 
-  constructor(private roomService: RoomService) {}
+  constructor(private roomService: RoomService, private router: Router) {}
 
   ngOnInit() {
-    this.loadRooms();
-  }
-
-  // Load rooms from backend
-  loadRooms() {
-    this.roomService.getRooms().subscribe({
-      next: (data) => {
-        console.log('Rooms API Response:', data); // debug
-        this.rooms = data;
-      },
-      error: (err) => {
-        console.error('Error loading rooms:', err);
-      }
+    // Subscribe rooms$ first
+    this.roomService.rooms$.subscribe(data => {
+      this.rooms = data;
+      this.loading = false;
     });
+
+    // Trigger loadRooms after subscription
+    this.roomService.loadRooms();
   }
 
-  // Open booking alert
-  openBookingModal(room: any): void {
-    alert(`You selected "${room.type}".\nPrice: $${room.prix}/night\nPlease call +1 (310) 555-1234 to book.`);
+  goToRoomDetails(id: number) {
+    this.router.navigate(['/room', id]);
   }
-
-  // Navigation click
-  onNavItemClick(item: any, event: Event) {
-    event.preventDefault();
-    this.navItems.forEach(i => i.active = false);
-    item.active = true;
-  }
-
-  // Hover on room card
-  onRoomHover(index: number, isHovering: boolean): void {
-    console.log(`Room ${index} hover: ${isHovering}`);
-  }
-
 }

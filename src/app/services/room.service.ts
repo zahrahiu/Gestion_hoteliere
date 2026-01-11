@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {tap} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RoomService {
+
 
   private apiUrl = 'http://localhost:8093/rooms';
 
@@ -23,6 +25,21 @@ export class RoomService {
 
   getRooms(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl); // bl token, since GET rooms public
+  }
+
+  private roomsSubject = new BehaviorSubject<any[]>([]);
+  rooms$ = this.roomsSubject.asObservable();
+
+  loadRooms() {
+    this.http.get<any[]>(this.apiUrl).subscribe({
+      next: data => this.roomsSubject.next(data),
+      error: err => console.error('Error loading rooms', err)
+    });
+  }
+
+
+  getRoomById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`); // GET /rooms/{id}, public route
   }
 
   createRoom(room: any): Observable<any> {

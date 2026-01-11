@@ -6,6 +6,7 @@ import {Register} from './register/register';
 import {Catalogue} from './catalogue/catalogue';
 import {ProfileComponent} from '../app/components/client/profil-client/profil-client';
 import {ProfilManager} from './components/manager/profil-manager/profil-manager';
+import {RoomDetails} from './room-details/room-details';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent } ,
@@ -14,6 +15,7 @@ export const routes: Routes = [
     { path: 'catalogue', component: Catalogue },
   { path: 'catalogue/profil', component: ProfileComponent },
   { path: 'managerprofil', component: ProfilManager },
+  { path: 'room/:id', component: RoomDetails },
 
 
   {
