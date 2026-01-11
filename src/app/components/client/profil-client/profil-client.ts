@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import {AuthService} from '../../../services/auth.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -20,17 +20,18 @@ export class ProfileComponent implements OnInit {
   showModal = false;
   modalMessage = '';
   pendingAction: string = '';
+  isLoading = false; // <-- AJOUTÉ
 
-  // User data
-  user = {
-    image: '',
-    nom: 'Doe',
-    prenom: 'John',
-    email: 'john.doe@example.com',
-    tel: '0612345678',
-    dateNaissance: '1990-01-01',
-    cne: 'AB123456'
-  };
+
+  imagePreview: string | null = null;
+  selectedImageFile: File | null = null;
+
+  user: any = {};
+
+  profileForm!: FormGroup;
+
+
+
 
   // Notifications with Font Awesome icons
   notifications = [
@@ -87,50 +88,93 @@ export class ProfileComponent implements OnInit {
     screenshot: null as File | null
   };
 
-  profileForm: FormGroup;
-  imagePreview: string | null = null;
+
   originalFormData: any;
 
   constructor(private fb: FormBuilder, private authService: AuthService) {
+
+  }
+
+  ngOnInit(): void {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.minLength(6)]],
+      password: [''],
       tel: ['', Validators.required],
       dateNaissance: ['', Validators.required],
-      cne: ['', Validators.required],
-      image: ['']
+      cni: ['', Validators.required]
+    });
+
+    this.loadClientProfile();
+  }
+
+  loadClientProfile() {
+    this.isLoading = true;
+
+    this.authService.getClientProfile().subscribe({
+      next: (client: any) => {
+        this.user = client;
+
+        this.profileForm.patchValue({
+          nom: client.nom,
+          prenom: client.prenom,
+          email: client.email,
+          tel: client.tel,
+          dateNaissance: client.dateNaissance,
+          cni: client.cni
+        });
+
+        this.imagePreview = null;
+
+        if (client.photo_carte_identity && client.photo_carte_identity !== '') {
+          this.imagePreview = client.photo_carte_identity;
+        }
+        this.isLoading = false;
+      },
+      error: () => this.isLoading = false
     });
   }
 
-  ngOnInit(): void {
-    const token = localStorage.getItem('token');
-    console.log('=== DEBUG TOKEN ===');
-    console.log('Token length:', token?.length);
-    console.log('Token first 50 chars:', token?.substring(0, 50));
-    console.log('Token exists:', !!token);
+  updateProfile() {
+    if (this.profileForm.invalid) return;
 
-    // Test token manually
-    if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('Token payload:', payload);
-    }
+    const payload = {
+      nom: this.profileForm.value.nom,
+      prenom: this.profileForm.value.prenom,
+      tel: this.profileForm.value.tel,
+      dateNaissance: this.profileForm.value.dateNaissance,
+      cni: this.profileForm.value.cni,
+      photo_carte_identity: this.imagePreview // base64
+    };
 
-    this.authService.getClientProfile().subscribe({
-      next: (res) => {
-        console.log('✅ SUCCESS - Response:', res);
+    this.isLoading = true;
+
+    this.authService.updateClientProfile(payload).subscribe({
+      next: () => {
+        alert('✅ Profil mis à jour avec succès');
+        this.isLoading = false;
       },
-      error: (err) => {
-        console.error('❌ ERROR - Full error:', err);
-        console.log('Status:', err.status);
-        console.log('Status Text:', err.statusText);
-        console.log('Error message:', err.message);
-        console.log('Error details:', err.error);
+      error: () => {
+        alert('❌ Erreur lors de la mise à jour');
+        this.isLoading = false;
       }
     });
   }
 
+
+  onImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.selectedImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
 
   loadUserData(): void {
     // Simuler le chargement des données
@@ -142,18 +186,7 @@ export class ProfileComponent implements OnInit {
     this.activeSection = section;
   }
 
-  onImageSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-        this.user.image = this.imagePreview;
-        this.profileForm.patchValue({ image: file });
-      };
-      reader.readAsDataURL(file);
-    }
-  }
+
 
   onScreenshotSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -162,23 +195,14 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  updateProfile(): void {
-    if (this.profileForm.valid) {
-      console.log('Profile updated:', this.profileForm.value);
-
-      // Simuler sauvegarde
-      Object.assign(this.user, this.profileForm.value);
-      this.originalFormData = this.profileForm.value;
-
-      // Afficher notification
-      this.showNotification('Profil mis à jour avec succès!');
-    }
-  }
-
   cancelEdit(): void {
     this.profileForm.patchValue(this.originalFormData);
-    this.imagePreview = null;
+
+    this.imagePreview = this.user.photo_carte_identity
+      ? this.user.photo_carte_identity
+      : null;
   }
+
 
   toggleRead(notification: any): void {
     notification.read = !notification.read;
@@ -231,9 +255,11 @@ export class ProfileComponent implements OnInit {
     this.showModal = false;
 
     if (this.pendingAction === 'logout') {
+      // Logique de déconnexion
       console.log('Déconnexion...');
       this.showNotification('Déconnexion réussie!');
     } else if (this.pendingAction === 'deleteAccount') {
+      // Logique de suppression de compte
       console.log('Compte supprimé...');
       this.showNotification('Compte supprimé avec succès!');
     }
@@ -243,6 +269,5 @@ export class ProfileComponent implements OnInit {
 
   showNotification(message: string): void {
     alert(message);
-
   }
 }

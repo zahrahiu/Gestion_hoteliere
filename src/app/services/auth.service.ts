@@ -66,6 +66,26 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
+  // auth.service.ts - Ajoute cette méthode
+  updateClientProfile(data: any) {
+    const token = localStorage.getItem('token');
+
+    return this.http.put(
+      'http://127.0.0.1:8088/clients/update',
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+  }
+
+
+
+
+
+
   refreshToken(): Observable<any> {
     const token = localStorage.getItem('token');
     return this.http.post<any>(`${this.apiUrl}/users/refresh-token`, { token })

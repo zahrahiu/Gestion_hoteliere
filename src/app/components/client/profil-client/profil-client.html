@@ -81,7 +81,7 @@
     </div>
   </div>
 
- <div class="main-content">
+  <div class="main-content">
     <!-- Profile Section -->
     <div class="content-section profile-edit" *ngIf="activeSection === 'profile'">
       <div class="page-header">
@@ -97,9 +97,10 @@
                 <i class="fas fa-user"></i>
               </div>
 
-              <img *ngIf="imagePreview || user.image"
-                   [src]="imagePreview || user.image"
+              <img *ngIf="imagePreview || user.photo_carte_identity"
+                   [src]="imagePreview || user.photo_carte_identity"
                    alt="Profile">
+
 
               <div class="avatar-overlay">
                 <label for="fileInput" class="change-photo-btn">
@@ -138,7 +139,7 @@
 
               <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" formControlName="email" placeholder="email@exemple.com">
+                <input type="email" id="email" formControlName="email" readonly>
                 <div class="error" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
                   Email invalide
                 </div>
@@ -151,17 +152,7 @@
             </div>
           </div>
 
-          <div class="form-section">
-            <h3><i class="fas fa-lock"></i> Sécurité</h3>
-            <div class="form-group full-width">
-              <label for="password">Mot de passe</label>
-              <input type="password" id="password" formControlName="password" placeholder="Laisser vide pour ne pas changer">
-              <div class="error" *ngIf="profileForm.get('password')?.invalid && profileForm.get('password')?.touched">
-                Minimum 6 caractères
-              </div>
-              <p class="hint">Laisser vide pour conserver le mot de passe actuel</p>
-            </div>
-          </div>
+
 
           <div class="form-section">
             <h3><i class="fas fa-info-circle"></i> Informations Additionnelles</h3>
@@ -173,7 +164,7 @@
 
               <div class="form-group">
                 <label for="cne">CNE *</label>
-                <input type="text" id="cne" formControlName="cne" placeholder="Votre CNE">
+                <input type="text" id="cni" formControlName="cni" placeholder="Votre CNI">
               </div>
             </div>
           </div>
