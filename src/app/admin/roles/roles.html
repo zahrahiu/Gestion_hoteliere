@@ -1,0 +1,243 @@
+<div class="roles-container">
+  <mat-card class="roles-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="title-icon">admin_panel_settings</mat-icon>
+        Gestion des Rôles & Permissions
+      </mat-card-title>
+      <mat-card-subtitle>
+        Gérer les rôles d'accès et leurs permissions
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <!-- Onglets -->
+    <mat-tab-group [(selectedIndex)]="activeTab" class="tabs-container">
+      
+      <!-- ============ ONGLET 1: RÔLES ============ -->
+      <mat-tab label="Rôles">
+        <div class="tab-content">
+          <!-- Formulaire création rôle -->
+          <div class="create-section">
+            <h3><mat-icon>add_circle</mat-icon> Créer un nouveau rôle</h3>
+            <div class="create-form">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nom du rôle</mat-label>
+                <input matInput [(ngModel)]="newRoleName" placeholder="Ex: MANAGER, STAFF, GUEST">
+                <mat-hint>Doit être unique et en majuscules</mat-hint>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" (click)="createRole()" 
+                      [disabled]="!newRoleName.trim()" class="create-btn">
+                <mat-icon>add</mat-icon>
+                Créer le rôle
+              </button>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Liste des rôles -->
+          <div class="list-section">
+            <h3><mat-icon>list</mat-icon> Rôles existants</h3>
+            
+            <div *ngIf="loading" class="loading-spinner">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Chargement des rôles...</p>
+            </div>
+
+            <div *ngIf="!loading && roles.length === 0" class="empty-state">
+              <mat-icon>admin_panel_settings</mat-icon>
+              <p>Aucun rôle n'a été créé</p>
+            </div>
+
+            <div *ngIf="!loading && roles.length > 0" class="roles-grid">
+              <div *ngFor="let role of roles" 
+                   class="role-card" 
+                   [class.selected]="selectedRole?.id === role.id"
+                   (click)="selectRole(role)">
+                
+                <div class="role-header">
+                  <div class="role-title">
+                    <span class="role-badge" [class.admin-badge]="role.name === 'ADMIN'">
+                      {{ role.name }}
+                    </span>
+                    <span class="role-id">ID: {{ role.id }}</span>
+                  </div>
+                  
+                  <div class="role-actions">
+                    <button mat-icon-button color="warn" 
+                            [disabled]="!isDeletable(role)"
+                            (click)="$event.stopPropagation(); deleteRole(role.id)"
+                            matTooltip="Supprimer le rôle">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="role-body">
+                  <p class="role-description">
+                    {{ role.description || 'Aucune description' }}
+                  </p>
+                  
+                  <div class="role-stats">
+                    <div class="stat-item">
+                      <mat-icon>people</mat-icon>
+                      <span>{{ getUsersCount(role.users) }} utilisateur(s)</span>
+                    </div>
+                    <div class="stat-item">
+                      <mat-icon>security</mat-icon>
+                      <span>{{ getRolePermissions(role).length }} permission(s)</span>
+                    </div>
+                  </div>
+
+                  <!-- Permissions du rôle -->
+                  <div *ngIf="getRolePermissions(role).length > 0" class="permissions-list">
+                    <mat-divider></mat-divider>
+                    <h4>Permissions :</h4>
+                    <mat-chip-listbox>
+                      <mat-chip *ngFor="let perm of getRolePermissions(role)" 
+                                [color]="'primary'" selected>
+                        {{ perm.name }}
+                      </mat-chip>
+                    </mat-chip-listbox>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ============ ONGLET 2: PERMISSIONS ============ -->
+      <mat-tab label="Permissions">
+        <div class="tab-content">
+          <!-- Formulaire création permission -->
+          <div class="create-section">
+            <h3><mat-icon>add_circle</mat-icon> Créer une nouvelle permission</h3>
+            <div class="create-form">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nom de la permission</mat-label>
+                <input matInput [(ngModel)]="newPermissionName" 
+                       placeholder="Ex: CREATE_USERS, UPDATE_BOOKINGS">
+                <mat-hint>Format: ACTION_RESOURCE (ex: READ_USERS)</mat-hint>
+              </mat-form-field>
+
+              <button mat-raised-button color="accent" (click)="createPermission()" 
+                      [disabled]="!newPermissionName.trim()" class="create-btn">
+                <mat-icon>add</mat-icon>
+                Créer la permission
+              </button>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Liste des permissions -->
+          <div class="list-section">
+            <h3><mat-icon>list</mat-icon> Permissions existantes</h3>
+            
+            <div *ngIf="loading" class="loading-spinner">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Chargement des permissions...</p>
+            </div>
+
+            <div *ngIf="!loading && permissions.length === 0" class="empty-state">
+              <mat-icon>security</mat-icon>
+              <p>Aucune permission n'a été créée</p>
+            </div>
+
+            <div *ngIf="!loading && permissions.length > 0" class="permissions-grid">
+              <div *ngFor="let perm of permissions" class="permission-card">
+                <div class="perm-header">
+                  <mat-icon class="perm-icon">lock</mat-icon>
+                  <div class="perm-info">
+                    <h4>{{ perm.name }}</h4>
+                    <p class="perm-description">{{ perm.description || 'Aucune description' }}</p>
+                  </div>
+                </div>
+                <div class="perm-footer">
+                  <span class="perm-id">ID: {{ perm.id }}</span>
+                  <span class="perm-usage">
+                    <mat-icon>link</mat-icon>
+                    {{ perm.roles?.length || 0 }} rôle(s)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ============ ONGLET 3: ASSIGNATION ============ -->
+      <mat-tab label="Assigner Permissions">
+        <div class="tab-content">
+          <div *ngIf="!selectedRole" class="select-role-message">
+            <mat-icon>warning</mat-icon>
+            <p>Sélectionnez d'abord un rôle dans l'onglet "Rôles"</p>
+          </div>
+
+          <div *ngIf="selectedRole" class="assign-section">
+            <h3>
+              <mat-icon>link</mat-icon>
+              Assigner des permissions au rôle: 
+              <span class="selected-role-name">{{ selectedRole.name }}</span>
+            </h3>
+
+            <!-- Permissions déjà assignées -->
+            <div class="current-permissions" *ngIf="getRolePermissions(selectedRole).length > 0">
+              <h4>Permissions actuelles :</h4>
+              <mat-chip-listbox>
+                <mat-chip *ngFor="let perm of getRolePermissions(selectedRole)" 
+                          [color]="'primary'" selected [removable]="true"
+                          (removed)="removePermissionFromRole(perm.id)">
+                  {{ perm.name }}
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip>
+              </mat-chip-listbox>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Formulaire d'assignation -->
+            <div class="assign-form">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Sélectionner une permission</mat-label>
+                <mat-select [(ngModel)]="selectedPermission">
+                  <mat-option *ngFor="let perm of permissions" [value]="perm">
+                    {{ perm.name }} ({{ perm.description || 'Aucune description' }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" 
+                      (click)="assignPermissionToRole()"
+                      [disabled]="!selectedPermission"
+                      class="assign-btn">
+                <mat-icon>link</mat-icon>
+                Assigner au rôle
+              </button>
+            </div>
+
+            <!-- Permissions disponibles -->
+            <div class="available-permissions">
+              <h4>Permissions disponibles :</h4>
+              <mat-list>
+                <mat-list-item *ngFor="let perm of permissions">
+                  <mat-icon matListItemIcon>lock_open</mat-icon>
+                  <div matListItemTitle>{{ perm.name }}</div>
+                  <div matListItemLine>{{ perm.description || 'Aucune description' }}</div>
+                  <button mat-icon-button color="primary" 
+                          (click)="selectedPermission = perm; assignPermissionToRole()"
+                          matTooltip="Assigner cette permission">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </mat-list-item>
+              </mat-list>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-card>
+</div>

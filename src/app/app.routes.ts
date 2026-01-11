@@ -42,7 +42,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/add-user/add-user')
             .then(m => m.AddUserComponent)
-      }
+      },
+{
+        path: 'roles',
+        loadComponent: () =>
+          import('./admin/roles/roles')
+            .then(m => m.RolesComponent)
+      },
+
     ]
   },
 
