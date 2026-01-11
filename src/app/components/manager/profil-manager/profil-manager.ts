@@ -6,10 +6,9 @@ import {NgForOf, NgIf, NgStyle} from "@angular/common";
   selector: 'app-profil-manager',
   imports: [
     FormsModule,
-    NgForOf,
     NgIf,
     ReactiveFormsModule,
-    NgStyle
+    
   ],
   templateUrl: './profil-manager.html',
   styleUrl: './profil-manager.css',

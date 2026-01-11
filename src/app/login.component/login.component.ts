@@ -64,16 +64,34 @@ export class LoginComponent {
       next: (response) => {
         this.isLoading = false;
 
+        // Vérifier les rôles depuis le token décodé
+        const user = this.authService.getCurrentUser();
+        console.log('User après login:', user); // Pour déboguer
+        
         // Redirection selon rôle
-        if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
-        else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
-        else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
-        else this.router.navigate(['/dashboard']);
+        if (user?.roles?.includes('ADMIN')) {
+          this.router.navigate(['/admin']);
+        } else if (user?.roles?.includes('MANAGER')) {
+          this.router.navigate(['/manager']);
+        } else if (user?.roles?.includes('CLIENT')) {
+          this.router.navigate(['/catalogue']);
+        } else if (user?.roles?.includes('HOUSEKEEPING')) {
+          this.router.navigate(['/housekeeping']);
+        } else {
+          this.router.navigate(['/home']);
+        }
       },
       error: (err) => {
         this.isLoading = false;
-        if (err.status === 401) this.error = 'Email ou mot de passe incorrect';
-        else this.error = 'Impossible de se connecter au serveur';
+        console.error('Login error:', err);
+        
+        if (err.status === 401) {
+          this.error = 'Email ou mot de passe incorrect';
+        } else if (err.status === 0) {
+          this.error = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
+        } else {
+          this.error = 'Une erreur est survenue. Veuillez réessayer.';
+        }
       }
     });
   }

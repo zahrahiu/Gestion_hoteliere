@@ -1,7 +1,6 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ViewChild, ElementRef, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 
 interface Message {
   text: string;
@@ -65,12 +64,28 @@ export class ChatbotComponent implements OnInit {
     'Contact information'
   ];
 
-  constructor(private datePipe: DatePipe) {}
+  constructor(
+    private datePipe: DatePipe,
+    @Inject(PLATFORM_ID) private platformId: Object  // <-- Ajouté ici
+  ) {}
 
   ngOnInit(): void {
-    const savedMessages = localStorage.getItem('chatHistory');
-    if (savedMessages) {
-      this.messages = JSON.parse(savedMessages);
+    // CORRECTION : Utiliser isPlatformBrowser pour vérifier si on est côté navigateur
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const savedMessages = localStorage.getItem('chatHistory');
+        if (savedMessages) {
+          this.messages = JSON.parse(savedMessages);
+        }
+      } catch (error) {
+        console.warn('Impossible de charger l\'historique du chat:', error);
+        // Garder le message par défaut
+        this.messages = [{
+          text: "Hello! I'm Roy, your AI concierge at Royellas Hotel. How can I assist you today?",
+          sender: 'bot',
+          timestamp: new Date()
+        }];
+      }
     }
   }
 
@@ -178,8 +193,15 @@ export class ChatbotComponent implements OnInit {
   }
 
   private saveChatHistory(): void {
-    const recentMessages = this.messages.slice(-50);
-    localStorage.setItem('chatHistory', JSON.stringify(recentMessages));
+    // CORRECTION : Vérifier si on est côté navigateur
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const recentMessages = this.messages.slice(-50);
+        localStorage.setItem('chatHistory', JSON.stringify(recentMessages));
+      } catch (error) {
+        console.warn('Impossible de sauvegarder l\'historique du chat:', error);
+      }
+    }
   }
 
   clearChat(): void {
@@ -188,7 +210,15 @@ export class ChatbotComponent implements OnInit {
       sender: 'bot',
       timestamp: new Date()
     }];
-    localStorage.removeItem('chatHistory');
+    
+    // CORRECTION : Vérifier si on est côté navigateur
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.removeItem('chatHistory');
+      } catch (error) {
+        console.warn('Impossible de supprimer l\'historique du chat:', error);
+      }
+    }
   }
 
   onKeyPress(event: KeyboardEvent): void {
