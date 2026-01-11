@@ -15,7 +15,8 @@
 
     <!-- Search f wast -->
     <div class="nav-search">
-      <input type="text" placeholder="Search rooms..." class="search-input">
+      <input type="text" placeholder="Search rooms by number..." class="search-input"
+             (keyup)="searchRoom($event.target.value)">
       <button class="search-btn"><i class="fas fa-search"></i></button>
     </div>
 
@@ -36,15 +37,38 @@
 <section class="catalogue" id="catalogue">
   <div class="container">
 
-    <h2 class="section-title">ALL ROOMS & SUITES</h2>
+    <div class="filters">
+
+      <!-- Filter by Type -->
+      <div class="filter-card">
+        <h3>Type Room</h3>
+        <select (change)="onTypeChange(($any($event.target)).value)">
+          <option value="">All Types</option>
+          <option value="Single">Single</option>
+          <option value="Double">Double</option>
+          <option value="Suite">Suite</option>
+        </select>
+      </div>
+
+      <!-- Filter by Price -->
+      <div class="filter-card">
+        <h3>Price Range (MAD)</h3>
+        <input type="range" min="2000" max="12000" step="500"
+               [value]="selectedPrice"
+               (input)="onPriceChange(($any($event.target)).value)">
+        <p>Up to: {{selectedPrice}} MAD</p>
+      </div>
+
+    </div>
+
 
     <div class="catalogue-grid">
       <div class="catalogue-card" *ngFor="let room of rooms$ | async">
         <img *ngIf="room.image" [src]="'http://localhost:8093/uploads/' + room.image" [alt]="room.type" class="catalogue-img">
         <div class="catalogue-content">
-          <h3 class="room-title">{{ room.type }}</h3>
-          <div class="room-price">${{ room.prix }} / night</div>
-          <p class="room-desc">{{ room.description }}</p>
+          <h3 class="room-title">Room {{ room.numero }}</h3>
+          <p class="room-title">For {{ room.type }}</p>
+          <div class="room-price">{{ room.prix }} MAD/ night</div>
           <div class="room-features">
             <span class="room-feature"><i class="fas fa-bed"></i> {{ room.lit_long }}x{{ room.lit_large }} Bed</span>
           </div>

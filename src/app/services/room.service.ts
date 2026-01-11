@@ -58,4 +58,18 @@ export class RoomService {
     return this.http.post('http://localhost:8093/rooms/upload', formData, { responseType: 'text' });
   }
 
+
+  getRoomByNumero(numero: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/numero/${numero}`);
+  }
+
+  getRoomsByType(type: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/type/${type}`);
+  }
+
+  getRoomsByPrix(prix: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/prix/${prix}`);
+  }
+
+
 }
