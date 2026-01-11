@@ -1,44 +1,42 @@
-import { Component } from '@angular/core';
-import {NgForOf} from '@angular/common';
-import { RouterModule } from '@angular/router';
+// src/app/components/catalogue/catalogue.component.ts
+import { Component, OnInit } from '@angular/core';
+import {CommonModule, NgForOf, NgIf} from '@angular/common';
+import {Router, RouterModule} from '@angular/router';
+import { RoomService } from '../services/room.service';
 
 @Component({
   selector: 'app-catalogue',
-  imports: [
-    NgForOf,
-    RouterModule
-  ],
+  standalone: true,
+  imports: [NgForOf, NgIf, CommonModule, RouterModule],
   templateUrl: './catalogue.html',
-  styleUrl: './catalogue.css',
+  styleUrls: ['./catalogue.css'],
 })
-export class Catalogue {
+export class Catalogue implements OnInit {
 
   navItems = [
-    { name: 'Home',  route: '/',active: false },
-    { name: 'About', active: false },
-    { name: 'Contact', active: false },
-    { name: 'Profil',route: 'profil', active: false }
+    { name: 'Home',  route: '/', active: false },
+    { name: 'About', route: '/about', active: false },
+    { name: 'Contact', route: '/contact', active: false },
+    { name: 'Profile', route: '/catalogue/profil', active: false }
   ];
 
-  onNavItemClick(item: any, event: Event) {
-    event.preventDefault();
-    this.navItems.forEach(i => i.active = false);
-    item.active = true;
+  rooms: any[] = [];
+  loading = true;
+
+  constructor(private roomService: RoomService, private router: Router) {}
+
+  ngOnInit() {
+    // Subscribe rooms$ first
+    this.roomService.rooms$.subscribe(data => {
+      this.rooms = data;
+      this.loading = false;
+    });
+
+    // Trigger loadRooms after subscription
+    this.roomService.loadRooms();
   }
 
-  openBookingModal(): void {
-    alert('Welcome to Royellas Hotel! Our booking system would open here. For now, please call +1 (310) 555-1234 to make a reservation.');
+  goToRoomDetails(id: number) {
+    this.router.navigate(['/room', id]);
   }
-
-  updateYear(): void {
-    // Cette fonction pourrait être utilisée pour mettre à jour dynamiquement l'année dans le footer
-    const currentYear = new Date().getFullYear();
-    // Logique pour mettre à jour l'année si nécessaire
-  }
-
-  onRoomHover(roomId: number, isHovering: boolean): void {
-    // Logique supplémentaire pour l'interaction avec les cartes de chambres
-    console.log(`Room ${roomId} hover: ${isHovering}`);
-  }
-
 }

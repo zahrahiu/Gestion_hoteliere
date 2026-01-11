@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- Dans index.html -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <i class="fas fa-crown"></i>
+      <span>ROYELLAS <span class="hotel-name">HOTEL</span></span>
+    </div>
+
+    <ul class="nav-menu">
+      <li *ngFor="let item of navItems">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+        >
+          {{ item.name }}
+        </a>
+      </li>
+
+    </ul>
+  </div>
+</nav>
+
+
+
+<div *ngIf="!loading && room" class="room-details">
+  <img [src]="'http://localhost:8093/uploads/' + room.image" [alt]="room.type" class="room-img">
+
+  <div class="room-info">
+    <h2>Room {{ room.numero }}</h2>
+    <h2>{{ room.type }}</h2>
+    <p>{{ room.description }}</p>
+    <p>Price: ${{ room.prix }} / night</p>
+    <p>Bed: {{ room.lit_long }}x{{ room.lit_large }}</p>
+    <p>Status: {{ room.etat }}</p>
+    <p>Taux: {{ room.taux }}</p>
+    <button >Réserver</button>
+  </div>
+</div>
+

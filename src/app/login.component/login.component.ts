@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import {RoomService} from '../services/room.service';
 
 @Component({
   selector: 'app-login',
@@ -66,7 +67,9 @@ export class LoginComponent {
 
         this.isLoading = false;
 
-        if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
+         if (response.roles?.includes('ADMIN')) this.router.navigate(['/admin']);
+
+        else if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
         else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
         else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
         else this.router.navigate(['/dashboard']);

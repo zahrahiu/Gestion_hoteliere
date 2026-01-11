@@ -32,7 +32,7 @@
            [class.active]="activeSection === 'Dashboard'"
            (click)="showSection('Dashboard')">
         <div class="nav-icon">
-          <i class="fas fa-bell"></i>
+          <i class="fas fa-chart-line"></i>
         </div>
         <span class="nav-text">Dashboard</span>
       </div>
@@ -41,7 +41,7 @@
            [class.active]="activeSection === 'rooms'"
            (click)="showSection('rooms')">
         <div class="nav-icon">
-          <i class="fas fa-cog"></i>
+          <i class="fas fa-bed"></i>
         </div>
         <span class="nav-text">Rooms</span>
       </div>
@@ -100,26 +100,9 @@
       <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
         <div class="form-header">
           <div class="form-avatar-section">
-            <div class="current-avatar">
-              <div class="avatar-icon" *ngIf="!imagePreview && !user.image">
-                <i class="fas fa-user"></i>
-              </div>
-
-              <img *ngIf="imagePreview || user.image"
-                   [src]="imagePreview || user.image"
-                   alt="Profile">
-
-              <div class="avatar-overlay">
-                <label for="fileInput" class="change-photo-btn">
-                  <i class="fas fa-camera"></i>
-                  <span>Changer photo</span>
-                </label>
-                <input id="fileInput" type="file" (change)="onImageSelected($event)" accept="image/*" hidden>
-              </div>
-            </div>
             <div class="avatar-info">
               <h3>{{user.nom}} {{user.prenom}}</h3>
-              <p>Membre depuis 2023</p>
+              <p>{{profileForm.get('email')?.value}}</p>
             </div>
           </div>
         </div>
@@ -130,44 +113,24 @@
             <div class="form-grid">
               <div class="form-group">
                 <label for="nom">Nom *</label>
-                <input type="text" id="nom" formControlName="nom" placeholder="Votre nom">
-                <div class="error" *ngIf="profileForm.get('nom')?.invalid && profileForm.get('nom')?.touched">
-                  Nom requis
-                </div>
+                <input type="text" id="nom" formControlName="nom" placeholder="Your LastName" readonly>
               </div>
 
               <div class="form-group">
                 <label for="prenom">Prénom *</label>
-                <input type="text" id="prenom" formControlName="prenom" placeholder="Votre prénom">
-                <div class="error" *ngIf="profileForm.get('prenom')?.invalid && profileForm.get('prenom')?.touched">
-                  Prénom requis
-                </div>
+                <input type="text" id="prenom" formControlName="prenom" placeholder="Your FirstName" readonly>
               </div>
 
               <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" formControlName="email" placeholder="email@exemple.com">
-                <div class="error" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
-                  Email invalide
-                </div>
+                <input type="email" id="email" formControlName="email" placeholder="Your Email" readonly>
               </div>
+
 
               <div class="form-group">
                 <label for="tel">Téléphone *</label>
                 <input type="tel" id="tel" formControlName="tel" placeholder="06 XX XX XX XX">
               </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3><i class="fas fa-lock"></i> Sécurité</h3>
-            <div class="form-group full-width">
-              <label for="password">Mot de passe</label>
-              <input type="password" id="password" formControlName="password" placeholder="Laisser vide pour ne pas changer">
-              <div class="error" *ngIf="profileForm.get('password')?.invalid && profileForm.get('password')?.touched">
-                Minimum 6 caractères
-              </div>
-              <p class="hint">Laisser vide pour conserver le mot de passe actuel</p>
             </div>
           </div>
 
@@ -190,7 +153,7 @@
             <button type="button" class="btn-secondary" (click)="cancelEdit()">
               <i class="fas fa-times"></i> Annuler
             </button>
-            <button type="submit" class="btn-primary" [disabled]="!profileForm.valid">
+            <button type="submit" class="btn-primary">
               <i class="fas fa-save"></i> Enregistrer les modifications
             </button>
           </div>
@@ -306,7 +269,7 @@
             </td>
             <td>{{ room.description }}</td>
             <td>
-              <img *ngFor="let img of room.image_urls" [src]="img" alt="Room Image" class="room-thumb">
+              <img [src]="'http://localhost:8093/uploads/' + room.image" alt="Room image" />
             </td>
             <td>{{ room.taux }} %</td>
             <td>{{ room.lit_long }} x {{ room.lit_large }} cm</td>
@@ -328,28 +291,29 @@
         <span class="close" (click)="closeCreateRoomModal()">&times;</span>
         <h2>{{ isEditMode ? 'Modifier une chambre' : 'Créer une nouvelle chambre' }}</h2>
 
-        <form (ngSubmit)="isEditMode ? updateRoom() : submitCreateRoom(selectedRoom)">
+        <form (ngSubmit)="submitRoom()">
 
           <!-- Basic info -->
-          <input [(ngModel)]="selectedRoom.numero" name="numero" placeholder="Numéro">
-          <select [(ngModel)]="selectedRoom.type" name="type">
+          <input [(ngModel)]="selectedRoom.numero" name="numero" placeholder="Numéro" required>
+          <select [(ngModel)]="selectedRoom.type" name="type" required>
             <option>Single</option>
             <option>Double</option>
             <option>Suite</option>
           </select>
-          <input type="number" [(ngModel)]="selectedRoom.prix" name="prix" placeholder="Prix (MAD)">
-          <select [(ngModel)]="selectedRoom.etat" name="etat">
+          <input type="number" [(ngModel)]="selectedRoom.prix" name="prix" placeholder="Prix (MAD)" required>
+          <select [(ngModel)]="selectedRoom.etat" name="etat" required>
             <option>Disponible</option>
             <option>Occupée</option>
             <option>Maintenance</option>
           </select>
 
-          <!-- Nouveau champs -->
+          <!-- Additional fields -->
           <textarea [(ngModel)]="selectedRoom.description" name="description" placeholder="Description"></textarea>
           <input type="number" [(ngModel)]="selectedRoom.taux" name="taux" placeholder="Taux (%)">
           <input type="number" [(ngModel)]="selectedRoom.lit_long" name="lit_long" placeholder="Longueur lit (cm)">
           <input type="number" [(ngModel)]="selectedRoom.lit_large" name="lit_large" placeholder="Largeur lit (cm)">
 
+          <!-- Image -->
           <label>Image de la chambre</label>
           <input type="file" (change)="onImageSelected($event)" accept="image/*">
           <div *ngIf="imagePreview">
@@ -364,6 +328,7 @@
 
       </div>
     </div>
+
 
 
     <div class="content-section" *ngIf="activeSection==='reservations'">

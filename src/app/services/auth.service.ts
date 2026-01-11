@@ -66,7 +66,16 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
-  // auth.service.ts - Ajoute cette méthode
+  refreshToken(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/users/refresh-token`, { token })
+      .pipe(
+        tap(response => {
+          localStorage.setItem('token', response.accessToken);
+        })
+      );
+  }
+
   updateClientProfile(data: any) {
     const token = localStorage.getItem('token');
 
@@ -81,19 +90,9 @@ export class AuthService {
     );
   }
 
-
-
-
-
-
-  refreshToken(): Observable<any> {
-    const token = localStorage.getItem('token');
-    return this.http.post<any>(`${this.apiUrl}/users/refresh-token`, { token })
-      .pipe(
-        tap(response => {
-          localStorage.setItem('token', response.accessToken);
-        })
-      );
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.roles?.includes('ADMIN') || false;
   }
 
   getToken(): string | null {
