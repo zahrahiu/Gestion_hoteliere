@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {Router, RouterModule} from '@angular/router';
 import { RoomService } from '../services/room.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-catalogue',
@@ -11,7 +12,7 @@ import { RoomService } from '../services/room.service';
   templateUrl: './catalogue.html',
   styleUrls: ['./catalogue.css'],
 })
-export class Catalogue implements OnInit {
+export class Catalogue  {
 
   navItems = [
     { name: 'Home',  route: '/', active: false },
@@ -20,20 +21,10 @@ export class Catalogue implements OnInit {
     { name: 'Profile', route: '/catalogue/profil', active: false }
   ];
 
-  rooms: any[] = [];
-  loading = true;
+  rooms$: Observable<any[]>; // <-- observable directly
 
-  constructor(private roomService: RoomService, private router: Router) {}
-
-  ngOnInit() {
-    // Subscribe rooms$ first
-    this.roomService.rooms$.subscribe(data => {
-      this.rooms = data;
-      this.loading = false;
-    });
-
-    // Trigger loadRooms after subscription
-    this.roomService.loadRooms();
+  constructor(private roomService: RoomService, private router: Router) {
+    this.rooms$ = this.roomService.getRooms(); // <-- getRooms observable directly
   }
 
   goToRoomDetails(id: number) {

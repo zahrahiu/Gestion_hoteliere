@@ -13,10 +13,14 @@ export class UserProfileService {
 
   private getHeaders() {
     const token = localStorage.getItem('token');
+
+    if (!token) {
+      console.warn('NO TOKEN FOUND');
+    }
+
     return {
       headers: new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token ?? ''}`
       })
     };
   }

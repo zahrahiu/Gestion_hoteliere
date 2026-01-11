@@ -24,22 +24,11 @@ export class RoomService {
   }
 
   getRooms(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl); // bl token, since GET rooms public
+    return this.http.get<any[]>(this.apiUrl);
   }
-
-  private roomsSubject = new BehaviorSubject<any[]>([]);
-  rooms$ = this.roomsSubject.asObservable();
-
-  loadRooms() {
-    this.http.get<any[]>(this.apiUrl).subscribe({
-      next: data => this.roomsSubject.next(data),
-      error: err => console.error('Error loading rooms', err)
-    });
-  }
-
 
   getRoomById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`); // GET /rooms/{id}, public route
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
   createRoom(room: any): Observable<any> {

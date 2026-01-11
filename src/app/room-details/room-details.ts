@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { RoomService } from '../services/room.service';
@@ -10,7 +10,7 @@ import { RoomService } from '../services/room.service';
   templateUrl: './room-details.html',
   styleUrls: ['./room-details.css'],
 })
-export class RoomDetails implements OnInit {
+export class RoomDetails {
 
   room: any;
   loading = true;
@@ -26,26 +26,24 @@ export class RoomDetails implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private roomService: RoomService
-  ) {}
-
-  ngOnInit() {
+  ) {
     const roomId = +this.route.snapshot.paramMap.get('id')!;
+
     if (!roomId) {
       this.errorMsg = 'Room ID not found';
       this.loading = false;
-      return;
+    } else {
+      this.roomService.getRoomById(roomId).subscribe({
+        next: (data) => {
+          this.room = data;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMsg = 'Failed to load room';
+          this.loading = false;
+        }
+      });
     }
-
-    this.roomService.getRoomById(roomId).subscribe({
-      next: (data) => {
-        this.room = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMsg = 'Failed to load room';
-        this.loading = false;
-      }
-    });
   }
 }

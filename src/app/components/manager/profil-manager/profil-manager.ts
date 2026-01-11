@@ -12,7 +12,7 @@ import {UserProfileService} from '../../../services/user-profile.service';
     NgForOf,
     NgIf,
     ReactiveFormsModule,
-    
+
     HttpClientModule,
     NgClass
   ],
@@ -116,6 +116,7 @@ export class ProfilManager implements OnInit{
   }
 
   ngOnInit() {
+    this.testMeEndpoint();
     this.loadMyProfile();
     this.loadRooms();
   }
@@ -145,6 +146,13 @@ export class ProfilManager implements OnInit{
       }
     });
   }
+  testMeEndpoint() {
+    this.userProfileService.getMyProfile().subscribe({
+      next: res => console.log('ME OK', res),
+      error: err => console.error('ME ERROR', err)
+    });
+  }
+
 
   updateProfile(): void {
     if (this.profileForm.valid) {
