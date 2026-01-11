@@ -51,6 +51,8 @@ export class AuthService {
       );
   }
 
+
+
   register(firstName: string, lastName: string, email: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/register`, {
       firstName,
@@ -76,6 +78,14 @@ export class AuthService {
   getCurrentUser(): any {
     return this.currentUserSubject.value;
   }
+
+  getClientProfile() {
+    const token = localStorage.getItem('token');
+    return this.http.get('http://127.0.0.1:8088/clients/me', {
+      headers: { Authorization: `Bearer ${token}` } // tzid token hna
+    });
+  }
+
 
   isLoggedIn(): boolean {
     return this.isBrowser && !!localStorage.getItem('accessToken');

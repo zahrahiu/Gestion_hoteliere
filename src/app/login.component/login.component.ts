@@ -19,6 +19,7 @@ export class LoginComponent {
   isLoading = false;
   error = '';
 
+  // Navigation du site
   navItems = [
     { name: 'Home', active: false },
     { name: 'About', active: false },
@@ -38,61 +39,47 @@ export class LoginComponent {
     item.active = true;
   }
 
-  onSignUp(event: Event) {
-    event.preventDefault();
-    this.router.navigate(['/register']);
-  }
-
   onForgotPassword(event: Event) {
     event.preventDefault();
     alert('Mot de passe oublié cliqué !');
   }
 
-  onGoogleLogin() { console.log('Google login clicked'); }
-  onFacebookLogin() { console.log('Facebook login clicked'); }
+  onSignUp(event: Event) {
+    event.preventDefault();
+    this.router.navigate(['/register']); //route register here
+  }
 
-  onSubmit() {
-    if (!this.email || !this.password) {
-      this.error = 'Veuillez remplir tous les champs';
-      return;
-    }
+  onGoogleLogin() {
+    alert('Connexion Google cliquée !');
+  }
 
+  onFacebookLogin() {
+    alert('Connexion Facebook cliquée !');
+  }
+
+  async onSubmit() {
     this.isLoading = true;
     this.error = '';
 
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
+
         this.isLoading = false;
 
-        // Vérifier les rôles depuis le token décodé
-        const user = this.authService.getCurrentUser();
-        console.log('User après login:', user); // Pour déboguer
-        
-        // Redirection selon rôle
-        if (user?.roles?.includes('ADMIN')) {
-          this.router.navigate(['/admin']);
-        } else if (user?.roles?.includes('MANAGER')) {
-          this.router.navigate(['/manager']);
-        } else if (user?.roles?.includes('CLIENT')) {
-          this.router.navigate(['/catalogue']);
-        } else if (user?.roles?.includes('HOUSEKEEPING')) {
-          this.router.navigate(['/housekeeping']);
-        } else {
-          this.router.navigate(['/home']);
-        }
+        if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
+        else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
+        else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
+        else this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.isLoading = false;
-        console.error('Login error:', err);
-        
-        if (err.status === 401) {
-          this.error = 'Email ou mot de passe incorrect';
-        } else if (err.status === 0) {
-          this.error = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
-        } else {
-          this.error = 'Une erreur est survenue. Veuillez réessayer.';
-        }
+        if (err.status === 401) this.error = 'Email ou mot de passe incorrect';
+        else if (err.status === 0) this.error = 'Impossible de se connecter au serveur. Assurez-vous que Spring Boot est actif';
+        else this.error = 'Une erreur est survenue. Veuillez réessayer';
       }
     });
   }
+
+
+
 }

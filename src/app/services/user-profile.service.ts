@@ -2,66 +2,65 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface UserProfileResponse {
-  userId: number;
-  nom: string;
-  prenom: string;
-  telephone: string;
-  adresse: string;
-  cin: string;
-  metierRole: string;
-  departement: string;
-  dateEmbauche: Date;
-  superviseurId: number;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class UserProfileService {
-  private apiUrl = 'http://localhost:8080/v1/user-profiles';
+
+  private apiUrl = 'http://localhost:8071/v1/user-profiles';
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('accessToken');
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      })
+    };
   }
 
-  getAllUserProfiles(): Observable<UserProfileResponse[]> {
-    return this.http.get<UserProfileResponse[]>(this.apiUrl, {
-      headers: this.getHeaders()
-    });
+  getMyProfile(): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/me`,
+      this.getHeaders()
+    );
+  }
+
+  updateMyProfile(data: any): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}`,
+      data,
+      this.getHeaders()
+    );
+  }
+
+
+  getAllProfiles(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}`,
+      this.getHeaders()
+    );
   }
 
   changeProfileStatus(
-    userId: number, 
-    status: string, 
-    adminId: number, 
+    userId: number,
+    status: string,
+    adminId: number,
     rejectionReason?: string
-  ): Observable<UserProfileResponse> {
-    let params: any = {
-      status,
-      adminId: adminId.toString()
-    };
-    
+  ): Observable<any> {
+
+    let url = `${this.apiUrl}/${userId}/status?status=${status}&adminId=${adminId}`;
+
     if (rejectionReason) {
-      params.rejectionReason = rejectionReason;
+      url += `&rejectionReason=${rejectionReason}`;
     }
-    
-    return this.http.put<UserProfileResponse>(
-      `${this.apiUrl}/${userId}/status`,
-      null,
-      { 
-        headers: this.getHeaders(),
-        params 
-      }
+
+    return this.http.put<any>(
+      url,
+      {},
+      this.getHeaders()
     );
   }
 }

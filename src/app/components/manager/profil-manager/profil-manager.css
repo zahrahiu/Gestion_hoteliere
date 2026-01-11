@@ -1572,3 +1572,11 @@ input:checked + .slider:before {
   color: #333;
   text-align: center;
 }
+
+.rooms-table img {
+  width: 90px;       /* largeur */
+  height: 90px;      /* hauteur */
+  object-fit: cover; /* bach image tkamal f circle bla distortion */
+  border-radius: 50%; /* khlliha mdawra */
+  border: 1.2px solid #e23654; /* optionnel: border color */
+}

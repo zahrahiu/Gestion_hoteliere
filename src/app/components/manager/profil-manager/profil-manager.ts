@@ -1,19 +1,30 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {NgForOf, NgIf, NgStyle} from "@angular/common";
+import {NgClass, NgForOf, NgIf, NgStyle} from "@angular/common";
+import { HttpClientModule } from '@angular/common/http';
+import {RoomService} from '../../../services/room.service';
+import {UserProfileService} from '../../../services/user-profile.service';
 
 @Component({
   selector: 'app-profil-manager',
   imports: [
     FormsModule,
+    NgForOf,
     NgIf,
     ReactiveFormsModule,
-    
+    NgStyle,
+    HttpClientModule,
+    NgClass
   ],
   templateUrl: './profil-manager.html',
   styleUrl: './profil-manager.css',
 })
 export class ProfilManager implements OnInit{
+  rooms: any[] = [];
+  user: any = {};
+  selectedRoom: any = null;
+  createRoomModalOpen = false;
+  isEditMode = false;
 
   activeSection = 'profile';
   unreadNotifications = 3;
@@ -22,17 +33,6 @@ export class ProfilManager implements OnInit{
   pendingAction: string = '';
   reportForm: FormGroup;
   selectedFileName: string = 'Glisser ou sélectionner un fichier';
-
-  // User data
-  user = {
-    image: '',
-    nom: 'Doe',
-    prenom: 'John',
-    email: 'john.doe@example.com',
-    tel: '0612345678',
-    dateNaissance: '1990-01-01',
-    cne: 'AB123456'
-  };
 
   // Notifications with Font Awesome icons
   notifications = [
@@ -92,8 +92,13 @@ export class ProfilManager implements OnInit{
   profileForm: FormGroup;
   imagePreview: string | null = null;
   originalFormData: any;
+  imageFile: File | null = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private roomService: RoomService,
+    private userProfileService: UserProfileService
+  ) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
@@ -110,33 +115,169 @@ export class ProfilManager implements OnInit{
     });
   }
 
-  ngOnInit(): void {
-    this.loadUserData();
-    this.calculateUnreadNotifications();
+  ngOnInit() {
+    this.loadMyProfile();
+    this.loadRooms();
   }
 
-  loadUserData(): void {
-    // Simuler le chargement des données
-    this.profileForm.patchValue(this.user);
-    this.originalFormData = this.profileForm.value;
+  loadMyProfile() {
+    console.log('CALLING /me ...');
+
+    this.userProfileService.getMyProfile().subscribe({
+      next: profile => {
+        console.log('PROFILE OK', profile);
+
+        this.profileForm.patchValue({
+          nom: profile.nom,
+          prenom: profile.prenom,
+          email: profile.email,
+          tel: profile.tel,
+          cne: profile.cne,
+          dateNaissance: profile.dateNaissance
+        });
+
+        console.log('EMAIL IN FORM', this.profileForm.get('email')?.value);
+
+        this.user = profile;
+      },
+      error: err => {
+        console.error('ERROR PROFILE', err);
+      }
+    });
+  }
+
+  updateProfile(): void {
+    if (this.profileForm.valid) {
+      // On ne prend que les champs modifiables
+      const updateData = {
+        nom: this.profileForm.value.nom,
+        prenom: this.profileForm.value.prenom,
+        email: this.profileForm.value.email,
+        tel: this.profileForm.value.tel,
+        dateNaissance: this.profileForm.value.dateNaissance,
+        cne: this.profileForm.value.cne
+      };
+
+
+      this.userProfileService.updateMyProfile(updateData).subscribe({
+        next: updatedProfile => {
+          // Mettre à jour l'UI
+          this.user = {...this.user, ...updateData};
+          this.originalFormData = this.profileForm.value;
+
+          this.showNotification('Profil mis à jour avec succès!');
+        },
+        error: err => {
+          console.error('Erreur lors de la mise à jour du profil', err);
+          this.showNotification('Erreur lors de la mise à jour du profil');
+        }
+      });
+    }
+  }
+
+  loadRooms() {
+    this.roomService.getRooms().subscribe(data => {
+      this.rooms = data;
+    });
+  }
+
+  openCreateRoomModal() {
+    this.isEditMode = false;
+    this.selectedRoom = {};
+    this.imageFile = null;
+    this.createRoomModalOpen = true;
+  }
+
+  editRoom(room: any) {
+    this.isEditMode = true;
+    this.selectedRoom = { ...room };
+    this.imageFile = null; // reset file
+    this.createRoomModalOpen = true;
+  }
+
+  closeCreateRoomModal() {
+    this.createRoomModalOpen = false;
+  }
+
+  onImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.roomService.uploadImage(file).subscribe({
+      next: (imageUrl: string) => {
+        this.selectedRoom.image = imageUrl.replace('/uploads/', ''); // نخلي غير filename
+        this.imagePreview = imageUrl;
+
+        if (this.selectedRoom.id) {
+          const index = this.rooms.findIndex(r => r.id === this.selectedRoom.id);
+          if (index > -1) {
+            this.rooms[index].image = this.selectedRoom.image;
+          }
+        }
+      },
+      error: err => console.error(err)
+    });
+  }
+
+
+  submitRoom() {
+    if (!this.selectedRoom) return;
+
+    // Build the DTO to match backend
+    const roomDto = {
+      numero: this.selectedRoom.numero,
+      type: this.selectedRoom.type,
+      prix: Number(this.selectedRoom.prix),
+      etat: this.selectedRoom.etat,
+      description: this.selectedRoom.description || '',
+      taux: Number(this.selectedRoom.taux) || 0,
+      image: this.selectedRoom.image || '',
+      lit_long: Number(this.selectedRoom.lit_long) || 0,
+      lit_large: Number(this.selectedRoom.lit_large) || 0
+    };
+
+    if (this.isEditMode) {
+      this.roomService.updateRoom(this.selectedRoom.id, roomDto).subscribe({
+        next: () => {
+          this.loadRooms();
+          this.closeCreateRoomModal();
+          alert('Chambre modifiée avec succès!');
+        },
+        error: (err) => {
+          console.error('Erreur update room', err);
+          alert('Erreur lors de la modification de la chambre.');
+        }
+      });
+    } else {
+      this.roomService.createRoom(roomDto).subscribe({
+        next: () => {
+          this.loadRooms();
+          this.closeCreateRoomModal();
+          alert('Chambre créée avec succès!');
+        },
+        error: (err) => {
+          console.error('Erreur create room', err);
+          alert('Erreur lors de la création de la chambre.');
+        }
+      });
+    }
+  }
+
+
+  deleteRoom(id: number) {
+    if (confirm('Voulez-vous supprimer cette chambre ?')) {
+      this.roomService.deleteRoom(id).subscribe(() => {
+        this.loadRooms();
+        alert('Chambre supprimée avec succès!');
+      });
+    }
   }
 
   showSection(section: string): void {
     this.activeSection = section;
   }
 
-  onImageSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-        this.user.image = this.imagePreview;
-        this.profileForm.patchValue({ image: file });
-      };
-      reader.readAsDataURL(file);
-    }
-  }
+
 
   onScreenshotSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -145,38 +286,14 @@ export class ProfilManager implements OnInit{
     }
   }
 
-  updateProfile(): void {
-    if (this.profileForm.valid) {
-      console.log('Profile updated:', this.profileForm.value);
-
-      // Simuler sauvegarde
-      Object.assign(this.user, this.profileForm.value);
-      this.originalFormData = this.profileForm.value;
-
-      // Afficher notification
-      this.showNotification('Profil mis à jour avec succès!');
-    }
-  }
-
   cancelEdit(): void {
     this.profileForm.patchValue(this.originalFormData);
     this.imagePreview = null;
   }
 
-  toggleRead(notification: any): void {
-    notification.read = !notification.read;
-    this.calculateUnreadNotifications();
-  }
 
-  markAllAsRead(): void {
-    this.notifications.forEach(notif => notif.read = true);
-    this.unreadNotifications = 0;
-  }
 
-  calculateUnreadNotifications(): void {
-    this.unreadNotifications = this.notifications.filter(n => !n.read).length;
-  }
-
+  //-----------------------------------------------------------------------------------------------------------
   sendMessage(): void {
     if (this.contactMessage.trim()) {
       console.log('Message envoyé:', this.contactMessage);
@@ -192,6 +309,7 @@ export class ProfilManager implements OnInit{
     this.showModal = true;
   }
 
+  //-----------------------------------------------------------------------------------------------------
   deleteAccount(): void {
     this.modalMessage = 'Êtes-vous sûr de vouloir supprimer votre compte? Cette action est irréversible!';
     this.pendingAction = 'deleteAccount';
@@ -220,43 +338,6 @@ export class ProfilManager implements OnInit{
 
     // Dans une application réelle, vous utiliseriez un service de notifications
     // this.notificationService.show(message);
-  }
-
-
-  createRoomModalOpen = false;
-
-  openCreateRoomModal() {
-    this.createRoomModalOpen = true;
-  }
-
-  closeCreateRoomModal() {
-    this.createRoomModalOpen = false;
-  }
-
-  submitCreateRoom(form: any) {
-    console.log('Nouvelle chambre créée:', form);
-    this.closeCreateRoomModal();
-  }
-
-  onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
-      this.selectedFileName = file.name;
-      this.reportForm.patchValue({ reportFile: file });
-    } else {
-      this.selectedFileName = 'Glisser ou sélectionner un fichier';
-      this.reportForm.patchValue({ reportFile: null });
-    }
-  }
-
-  submitReport() {
-    if (this.reportForm.valid && this.reportForm.value.reportFile) {
-      const file = this.reportForm.value.reportFile;
-      console.log('Fichier soumis:', file);
-      // Ici tu peux faire upload vers backend via HttpClient
-    } else {
-      console.warn('Aucun fichier choisi');
-    }
   }
 
 }
