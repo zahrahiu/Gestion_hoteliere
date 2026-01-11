@@ -199,7 +199,7 @@ loadStats(): void {
     }
   });
 
-  const profileSub = this.profileService.getAllUserProfiles().subscribe({
+const profileSub = this.profileService.getAllProfiles().subscribe({
     next: (profiles: any[]) => {
       const pending = profiles.filter(p => p.status === 'PENDING').length;
       this.stats.pendingProfiles = pending;
