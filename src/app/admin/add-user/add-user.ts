@@ -48,9 +48,12 @@ export class AddUserComponent implements OnInit {
   availableRoles = [
     { value: 'ADMIN', label: 'Administrateur' },
     { value: 'MANAGER', label: 'Manager' },
-    { value: 'STAFF', label: 'Personnel' },
-    { value: 'CLIENT', label: 'Client' }
+    { value: 'HOUSEKEEPING', label: 'HOUSEKEEPING' },
+    { value: 'RECEPTIONNISTE', label: 'RECEPTIONNISTE' },
+    { value: 'MAINTENANCE', label: 'MAINTENANCE' },
+    { value: 'COMPTABLE', label: 'COMPTABLE' }
   ];
+
 
   constructor(
     private fb: FormBuilder,
@@ -182,7 +185,7 @@ export class AddUserComponent implements OnInit {
       password: formValues.password,
       firstName: formValues.firstName,
       lastName: formValues.lastName,
-      roles: [formValues.role] // Convertir en tableau comme attendu
+      role: [formValues.role] // Convertir en tableau comme attendu
     };
     
     // Mode soumission
