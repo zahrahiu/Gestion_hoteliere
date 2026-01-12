@@ -3,6 +3,7 @@ import { CommonModule, NgIf } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { RoomService } from '../services/room.service';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-room-details',
@@ -26,7 +27,9 @@ export class RoomDetails {
 
   constructor(
     private route: ActivatedRoute,
-    private roomService: RoomService
+    private roomService: RoomService,
+    private authService: AuthService
+
   ) {
     const roomId = +this.route.snapshot.paramMap.get('id')!;
 
@@ -73,16 +76,52 @@ export class RoomDetails {
 
   openModal() {
     this.showModal = true;
+
+    this.authService.getClientProfile().subscribe({
+      next: (client: any) => {
+        this.reservation.fname = client.nom || '';
+        this.reservation.lname = client.prenom || '';
+        this.reservation.email = client.email || '';
+        this.reservation.tel = client.tel || '';
+        this.reservation.cni = client.cni || '';
+        this.reservation.dob = client.dateNaissance || '';
+      },
+      error: (err) => {
+        console.error('Error loading client profile', err);
+      }
+    });
   }
+
 
   closeModal() {
     this.showModal = false;
   }
 
   submitReservation() {
-    console.log('Reservation data:', this.reservation);
-    // hna t9dar tsift l-backend via RoomService
-    alert('Reservation confirmed!');
-    this.closeModal();
+
+    // 1️⃣ نوجد data ديال client
+    const clientUpdate = {
+      tel: this.reservation.tel,
+      cni: this.reservation.cni,
+      dateNaissance: this.reservation.dob
+    };
+
+    // 2️⃣ نحدّث client ف DB
+    this.authService.updateClientProfile(clientUpdate).subscribe({
+      next: () => {
+        console.log('Client profile updated');
+
+        // 3️⃣ من بعد دير reservation
+        console.log('Reservation data:', this.reservation);
+
+        alert('Reservation confirmed!');
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Error updating client', err);
+        alert('Erreur lors de la mise à jour du profil');
+      }
+    });
   }
+
 }
