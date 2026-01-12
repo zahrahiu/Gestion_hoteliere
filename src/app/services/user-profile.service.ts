@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,13 @@ export class UserProfileService {
 
   private apiUrl = 'http://localhost:8071/v1/user-profiles';
 
-  constructor(private http: HttpClient) {}
+  private currentUserSubject: BehaviorSubject<any>;
+  public currentUser$: Observable<any>;
+
+  constructor(private http: HttpClient, private router: Router) {
+    this.currentUserSubject = new BehaviorSubject<any>(null);
+    this.currentUser$ = this.currentUserSubject.asObservable();
+  }
 
   private getHeaders() {
     const token = localStorage.getItem('token');
@@ -47,6 +54,29 @@ export class UserProfileService {
       this.getHeaders()
     );
   }
+
+  logout() {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      this.http.post('http://localhost:8071/v1/user-profiles/logout', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: () => {
+          console.log('Status OUT_WORK updated');
+        },
+        error: (err) => {
+          console.error('Impossible de mettre à jour le status', err);
+        }
+      });
+    }
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.currentUserSubject.next(null);  // ✅ maintenant ma3mrha tsawab
+    this.router.navigate(['/login']);     // ✅ redirect
+  }
+
 
   changeProfileStatus(
     userId: number,

@@ -198,7 +198,7 @@ export class ReceptionProfile implements OnInit{
 
   confirmAction(): void {
     if (this.pendingAction === 'logout') {
-      this.authService.logout();
+      this.userProfileService.logout();
     }
     this.showModal = false;
     this.pendingAction = null;
