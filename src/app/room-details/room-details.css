@@ -260,4 +260,152 @@ body {
 .back-link a:hover {
   color: #a38750;
 }
+/* Modal */
+.modal {
+  display: flex; /* flex to center content */
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modal-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 1.8rem;
+}
+
+.close {
+  color: #aaa;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Group two inputs side by side */
+.input-row {
+  display: flex;
+  gap: 15px;
+}
+
+/* Inputs inside the row share equal width */
+.input-row input {
+  flex: 1;
+}
+
+/* Regular inputs */
+.modal-content input[type=text],
+.modal-content input[type=email],
+.modal-content input[type=tel],
+.modal-content input[type=date] {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-content input:focus {
+  border-color: #e23654;
+  box-shadow: 0 0 5px rgba(226, 54, 84, 0.5);
+}
+
+/* Submit button */
+.submit-btn {
+  background-color: #c9a96e; /* golden accent */
+  color: #000;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #a38750;
+  transform: translateY(-2px);
+}
+
+/* Group two inputs side by side */
+.input-row {
+  display: flex;
+  gap: 20px; /* spacing bigger */
+}
+
+/* Each input box takes equal space */
+.input-row div {
+  flex: 1; /* equal width */
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* space between label and input */
+}
+
+.input-row input {
+  width: 100%;
+  padding: 14px 16px;       /* bigger padding */
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1.2rem;        /* bigger font */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-row input:focus {
+  border-color: #e23654;
+  box-shadow: 0 0 6px rgba(226, 54, 84, 0.5);
+}
+
+/* Labels bigger and readable */
+.input-row label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+/* Responsive: stack vertically on small screens */
+@media (max-width: 500px) {
+  .input-row {
+    flex-direction: column;
+  }
+}
 
