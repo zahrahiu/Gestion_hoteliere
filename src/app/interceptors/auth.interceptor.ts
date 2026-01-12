@@ -1,3 +1,4 @@
+// src/app/interceptors/auth.interceptor.ts
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -13,24 +14,50 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Ne pas ajouter de token pour les routes publiques
-    const publicRoutes = ['/login', '/register'];
-    if (publicRoutes.some(route => req.url.includes(route))) {
+    console.log('🔄 [Interceptor] Intercepting request to:', req.url);
+    
+    // قائمة المسارات العامة التي لا تحتاج توكن
+    const publicRoutes = [
+      '/login',
+      '/register',
+      '/v1/users/login',
+      '/v1/users/register'
+    ];
+    
+    // التحقق إذا كان الطلب لمسار عام
+    const isPublicRoute = publicRoutes.some(route => req.url.includes(route));
+    
+    if (isPublicRoute) {
+      console.log('🌐 [Interceptor] Public route, skipping token');
       return next.handle(req);
     }
-
-    // Récupérer le token
+    
+    // الحصول على التوكن
     const token = this.authService.getToken();
     
     if (token) {
+      console.log('✅ [Interceptor] Adding token to request');
+      console.log('🔑 Token preview:', token.substring(0, 30) + '...');
+      
       const clonedRequest = req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
         }
       });
+      
       return next.handle(clonedRequest).pipe(
         catchError((error: HttpErrorResponse) => this.handleError(error))
       );
+    } else {
+      console.warn('⚠️ [Interceptor] No token available for protected route');
+      
+      // إذا كان الطلب محميًا ولا يوجد توكن، توجيه للـ login
+      if (!isPublicRoute) {
+        console.log('🔒 [Interceptor] Redirecting to login...');
+        this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.router.url }
+        });
+      }
     }
     
     return next.handle(req).pipe(
@@ -39,14 +66,32 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
+    console.error('❌ [Interceptor] HTTP Error:', {
+      status: error.status,
+      statusText: error.statusText,
+      url: error.url,
+      message: error.message
+    });
+    
     if (error.status === 401) {
-      // Token expiré ou invalide
+      console.warn('🔒 [Interceptor] Unauthorized (401)');
+      
+      // Token expired or invalid
       this.authService.logout();
+      
+      // التوجيه إلى صفحة تسجيل الدخول
       this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url }
+        queryParams: { 
+          returnUrl: this.router.url,
+          sessionExpired: true 
+        }
       });
+      
+      // إظهار رسالة للمستخدم
+      // يمكنك إضافة snackbar هنا إذا أردت
     } else if (error.status === 403) {
-      // Accès interdit
+      console.warn('⛔ [Interceptor] Forbidden (403)');
+      // توجيه إلى صفحة غير مصرح بها
       this.router.navigate(['/unauthorized']);
     }
     

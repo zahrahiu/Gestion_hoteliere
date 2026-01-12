@@ -151,6 +151,7 @@ export class Admin implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadUserData();
     this.loadStats();
+    this.testStorage(); 
     this.setupAutoRefresh();
     this.loadNotifications();
   }
@@ -415,6 +416,27 @@ const profileSub = this.profileService.getAllProfiles().subscribe({
   get unreadNotificationsCount(): number {
   return this.notifications.filter(n => !n.read).length;
 }
+// في Admin class، أضف هذه الدالة:
+testStorage(): void {
+  console.log('🧪 [Admin] Testing localStorage...');
+  
+  console.log('🔑 Token exists?', localStorage.getItem('token') ? 'YES' : 'NO');
+  console.log('🔑 AccessToken exists?', localStorage.getItem('accessToken') ? 'YES' : 'NO');
+  console.log('👤 User exists?', localStorage.getItem('user') ? 'YES' : 'NO');
+  
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      console.log('📋 User data:', user);
+    } catch (e) {
+      console.error('❌ Error parsing user:', e);
+    }
+  }
+}
+
+// استدعها في ngOnInit بعد loadUserData():
+
 
 
 
