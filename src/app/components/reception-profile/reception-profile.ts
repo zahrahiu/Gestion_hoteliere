@@ -1,38 +1,34 @@
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {NgClass, NgForOf, NgIf, NgStyle} from "@angular/common";
-import {HttpClient, HttpClientModule} from '@angular/common/http';
-import {RoomService} from '../../../services/room.service';
-import {UserProfileService} from '../../../services/user-profile.service';
-import {UserResponseDTO, UserService} from '../../../services/user.service';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {NgClass, NgForOf, NgIf} from '@angular/common';
+import {HttpClientModule} from '@angular/common/http';
+import {RoomService} from '../../services/room.service';
+import {UserProfileService} from '../../services/user-profile.service';
+
 
 @Component({
-  selector: 'app-profil-manager',
+  selector: 'app-reception-profile',
   imports: [
     FormsModule,
     NgForOf,
     NgIf,
     ReactiveFormsModule,
-
     HttpClientModule,
     NgClass
   ],
-  templateUrl: './profil-manager.html',
-  styleUrl: './profil-manager.css',
+  templateUrl: './reception-profile.html',
+  styleUrl: './reception-profile.css',
 })
-export class ProfilManager implements OnInit{
+export class ReceptionProfile implements OnInit{
   rooms: any[] = [];
   user: any = {};
-  selectedRoom: any = null;
   createRoomModalOpen = false;
-  isEditMode = false;
 
   activeSection = 'profile';
   showModal = false;
   modalMessage = '';
   pendingAction: string = '';
   reportForm: FormGroup;
-
 
   // Settings
   settings = {
@@ -82,10 +78,15 @@ export class ProfilManager implements OnInit{
   ngOnInit() {
     this.testMeEndpoint();
     this.loadMyProfile();
-    this.loadRooms();
-    this.fetchUsers();
+    this.loadRooms()
   }
 
+  loadRooms() {
+    this.roomService.getRooms().subscribe(
+      (data) => this.rooms = data,
+      (err) => console.error('Error fetching rooms', err)
+    );
+  }
   loadMyProfile() {
     console.log('CALLING /me ...');
 
@@ -147,105 +148,9 @@ export class ProfilManager implements OnInit{
       });
     }
   }
-
-  loadRooms() {
-    this.roomService.getRooms().subscribe(data => {
-      this.rooms = data;
-    });
-  }
-
-  openCreateRoomModal() {
-    this.isEditMode = false;
-    this.selectedRoom = {};
-    this.imageFile = null;
-    this.createRoomModalOpen = true;
-  }
-
-  editRoom(room: any) {
-    this.isEditMode = true;
-    this.selectedRoom = { ...room };
-    this.imageFile = null; // reset file
-    this.createRoomModalOpen = true;
-  }
-
   closeCreateRoomModal() {
     this.createRoomModalOpen = false;
   }
-
-  onImageSelected(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-
-    this.roomService.uploadImage(file).subscribe({
-      next: (imageUrl: string) => {
-        this.selectedRoom.image = imageUrl.replace('/uploads/', ''); // نخلي غير filename
-        this.imagePreview = imageUrl;
-
-        if (this.selectedRoom.id) {
-          const index = this.rooms.findIndex(r => r.id === this.selectedRoom.id);
-          if (index > -1) {
-            this.rooms[index].image = this.selectedRoom.image;
-          }
-        }
-      },
-      error: err => console.error(err)
-    });
-  }
-
-
-  submitRoom() {
-    if (!this.selectedRoom) return;
-
-    // Build the DTO to match backend
-    const roomDto = {
-      numero: this.selectedRoom.numero,
-      type: this.selectedRoom.type,
-      prix: Number(this.selectedRoom.prix),
-      etat: this.selectedRoom.etat,
-      description: this.selectedRoom.description || '',
-      taux: Number(this.selectedRoom.taux) || 0,
-      image: this.selectedRoom.image || '',
-      lit_long: Number(this.selectedRoom.lit_long) || 0,
-      lit_large: Number(this.selectedRoom.lit_large) || 0
-    };
-
-    if (this.isEditMode) {
-      this.roomService.updateRoom(this.selectedRoom.id, roomDto).subscribe({
-        next: () => {
-          this.loadRooms();
-          this.closeCreateRoomModal();
-          alert('Chambre modifiée avec succès!');
-        },
-        error: (err) => {
-          console.error('Erreur update room', err);
-          alert('Erreur lors de la modification de la chambre.');
-        }
-      });
-    } else {
-      this.roomService.createRoom(roomDto).subscribe({
-        next: () => {
-          this.loadRooms();
-          this.closeCreateRoomModal();
-          alert('Chambre créée avec succès!');
-        },
-        error: (err) => {
-          console.error('Erreur create room', err);
-          alert('Erreur lors de la création de la chambre.');
-        }
-      });
-    }
-  }
-
-
-  deleteRoom(id: number) {
-    if (confirm('Voulez-vous supprimer cette chambre ?')) {
-      this.roomService.deleteRoom(id).subscribe(() => {
-        this.loadRooms();
-        alert('Chambre supprimée avec succès!');
-      });
-    }
-  }
-
   showSection(section: string): void {
     this.activeSection = section;
   }
@@ -313,17 +218,16 @@ export class ProfilManager implements OnInit{
     // this.notificationService.show(message);
   }
 
-  internalUsers: any[] = [];
-  fetchUsers() {
-    this.userProfileService.getAllProfiles().subscribe({
-      next: users => {
-        this.internalUsers = users;
-        console.log('USERS FETCHED:', this.internalUsers);
-      },
-      error: err => {
-        console.error('Erreur lors du chargement des utilisateurs', err);
-      }
-    });
+  clientsOpen = false;
+
+  toggleClients() {
+    this.clientsOpen = !this.clientsOpen;
+  }
+
+  roomsOpen = false;
+
+  toggleRooms() {
+    this.roomsOpen = !this.roomsOpen;
   }
 
 }

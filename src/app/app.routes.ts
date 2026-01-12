@@ -8,6 +8,7 @@ import {Routes} from '@angular/router';
 import {HomeComponent} from './home/home';
 import {LoginComponent} from './login.component/login.component';
 import {RoomDetails} from './room-details/room-details';
+import {ReceptionProfile} from './components/reception-profile/reception-profile';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'catalogue/profil', component: ProfileComponent },
   { path: 'managerprofil', component: ProfilManager },
   { path: 'room/:id', component: RoomDetails },
+  { path: 'reception', component: ReceptionProfile },
 
   // Route Admin
   {
@@ -57,6 +59,11 @@ export const routes: Routes = [
   {
     path: 'manager',
     loadComponent: () => import('./components/manager/profil-manager/profil-manager').then(m => m.ProfilManager)
+  },
+
+  {
+    path: 'reception',
+    loadComponent: () => import('./components/reception-profile/reception-profile').then(m => m.ReceptionProfile)
   },
 
   {

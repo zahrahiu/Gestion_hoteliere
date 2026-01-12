@@ -27,20 +27,41 @@
   </div>
 </nav>
 
-
+<div class="back-link">
+  <a [routerLink]="'/catalogue'"><i class="fas fa-arrow-left"></i> Back to Catalogue</a>
+</div>
 
 <div class="room-details">
-  <img [src]="'http://localhost:8093/uploads/' + room.image" [alt]="room.type" class="room-img">
+  <!-- Image -->
+  <img [src]="'http://localhost:8093/uploads/' + room.image"
+       [alt]="room.type"
+       class="room-img">
 
+  <!-- Info -->
   <div class="room-info">
-    <h2>Room {{ room.numero }}</h2>
-    <h2>{{ room.type }}</h2>
-    <p>{{ room.description }}</p>
-    <p>Price: ${{ room.prix }} / night</p>
-    <p>Bed: {{ room.lit_long }}x{{ room.lit_large }}</p>
-    <p>Status: {{ room.etat }}</p>
-    <p>Taux: {{ room.taux }}</p>
-    <button >Réserver</button>
+    <h2 class="room-number">Room {{ room.numero }}</h2>
+    <h3 class="room-type"> For {{ room.type }} Guests</h3>
+    <p class="room-desc">{{ room.description }}</p>
+    <p class="room-price"><span>{{ room.prix }} MAD/night</span></p>
+    <p class="room-bed"><i class="fas fa-bed"></i> Bed: {{ room.lit_long }}x{{ room.lit_large }}</p>
+
+    <!-- Status badge -->
+    <p class="room-status-msg"
+       [ngClass]="{
+         'occupied-msg': room.etat === 'Occupée',
+         'maintenance-msg': room.etat === 'Maintenance',
+         'available-msg': room.etat === 'Disponible'
+       }">
+      {{ room.etat }}
+    </p>
+
+    <!-- Reserve button -->
+    <button
+      class="reserve-btn"
+      [disabled]="room.etat !== 'Disponible'">
+      Reserve a Room
+    </button>
   </div>
 </div>
+
 

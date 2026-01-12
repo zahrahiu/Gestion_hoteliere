@@ -28,32 +28,43 @@
         <span class="nav-text">Profil</span>
       </div>
 
-      <div class="nav-item"
-           [class.active]="activeSection === 'Dashboard'"
-           (click)="showSection('Dashboard')">
-        <div class="nav-icon">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <span class="nav-text">Dashboard</span>
+      <div class="nav-section-title" (click)="toggleClients()">
+        Clients
+        <i class="fas fa-chevron-down" [class.rotate]="clientsOpen"></i>
       </div>
 
-      <div class="nav-item"
-           [class.active]="activeSection === 'rooms'"
-           (click)="showSection('rooms')">
-        <div class="nav-icon">
-          <i class="fas fa-bed"></i>
+      <div class="nav-submenu" *ngIf="clientsOpen">
+        <div class="nav-item"
+             [class.active]="activeSection === 'checkin'"
+             (click)="showSection('checkin')">
+          <div class="nav-icon"><i class="fas fa-sign-in-alt"></i></div>
+          <span class="nav-text">Check In</span>
         </div>
-        <span class="nav-text">Rooms</span>
+
+        <div class="nav-item"
+             [class.active]="activeSection === 'checkout'"
+             (click)="showSection('checkout')">
+          <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
+          <span class="nav-text">Check Out</span>
+        </div>
       </div>
 
-      <div class="nav-item"
-           [class.active]="activeSection === 'services'"
-           (click)="showSection('services')">
-        <div class="nav-icon">
-          <i class="fas fa-users"></i>
-        </div>
-        <span class="nav-text">internal services</span>
+
+      <!-- Chambres Section -->
+      <div class="nav-section-title" (click)="toggleRooms()">
+        Rooms
+        <i class="fas fa-chevron-down" [class.rotate]="roomsOpen"></i>
       </div>
+
+      <div class="nav-submenu" *ngIf="roomsOpen">
+        <div class="nav-item"
+             [class.active]="activeSection === 'rooms'"
+             (click)="showSection('rooms')">
+          <div class="nav-icon"><i class="fas fa-bed"></i></div>
+          <span class="nav-text">View Rooms</span>
+        </div>
+      </div>
+
 
       <div class="nav-item"
            [class.active]="activeSection === 'settings'"
@@ -113,8 +124,8 @@
               <h3>{{user.nom}} {{user.prenom}}</h3>
               <p>{{profileForm.get('email')?.value}}</p>
               <p>
-                You are the manager. You can visualize the dashboard, manage rooms by creating, editing, or deleting them,
-                and oversee all internal services of the hotel.
+                You are the receptionist. You check each client when they enter the hotel (Check In) and when they leave (Check Out).
+                You also review the status of the rooms they occupy and verify the reservation dates for every guest.
               </p>
             </div>
           </div>
@@ -174,105 +185,120 @@
       </form>
     </div>
 
-    <div class="content-section" *ngIf="activeSection==='Dashboard'">
-
+    <!-- Check In Section -->
+    <div class="content-section" *ngIf="activeSection === 'checkin'">
       <div class="page-header">
-        <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+        <h1><i class="fas fa-sign-in-alt"></i> Check In</h1>
+        <p class="page-subtitle">List of clients currently in the hotel</p>
       </div>
 
-      <!-- ===== STATS CARDS ===== -->
-      <div class="stats-cards">
-        <div class="stat-card">
-          <h3>Total Users</h3>
-          <p>120</p>
-        </div>
-
-        <div class="stat-card">
-          <h3>Chambres</h3>
-          <p>45</p>
-        </div>
-
-        <div class="stat-card">
-          <h3>Réservations</h3>
-          <p>78</p>
-        </div>
-
-        <div class="stat-card">
-          <h3>Revenus</h3>
-          <p>120 000 MAD</p>
-        </div>
-      </div>
-
-      <!-- ===== DIAGRAMMES ===== -->
-      <div class="charts-grid">
-
-        <!-- Bar Chart -->
-        <div class="chart-card">
-          <h3>Réservations par mois</h3>
-
-          <div class="bar-chart">
-            <div class="bar"><span>Jan</span><div style="height:60%"></div></div>
-            <div class="bar"><span>Fév</span><div style="height:80%"></div></div>
-            <div class="bar"><span>Mar</span><div style="height:40%"></div></div>
-            <div class="bar"><span>Avr</span><div style="height:90%"></div></div>
-            <div class="bar"><span>Mai</span><div style="height:70%"></div></div>
-          </div>
-        </div>
-
-        <!-- Progress Chart -->
-        <div class="chart-card">
-          <h3>Taux d’occupation</h3>
-
-          <div class="progress-item">
-            <span>Chambres occupées</span>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width:75%"></div>
-            </div>
-            <strong>75%</strong>
-          </div>
-
-          <div class="progress-item">
-            <span>Disponibilité</span>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width:25%"></div>
-            </div>
-            <strong>25%</strong>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="content-section" *ngIf="activeSection==='rooms'">
-
-      <div class="page-header">
-        <h1><i class="fas fa-bed"></i> Chambres</h1>
-        <button class="btn-sm create-room" (click)="openCreateRoomModal()">Créer Room</button>
-      </div>
-
-      <!-- ===== ROOMS TABLE ===== -->
-      <div class="rooms-table">
-        <table>
+      <div class="clients-table-container">
+        <table class="clients-table">
           <thead>
           <tr>
-            <th>Numéro</th>
-            <th>Type</th>
-            <th>Prix</th>
-            <th>État</th>
-            <th>Description</th>
-            <th>Images</th>
-            <th>Taux</th>
-            <th>Lit (L x l)</th>
-            <th>Action</th>
+            <th>#</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Date de réservation</th>
+            <th>Check In</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let room of rooms">
+          <tr>
+            <td>1</td>
+            <td>Hassan</td>
+            <td>El Fassi</td>
+            <td>hassan.ef@example.com</td>
+            <td>06 12 34 56 78</td>
+            <td>2026-01-10</td>
+            <td>09:00</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Leila</td>
+            <td>Benziane</td>
+            <td>leila.b@example.com</td>
+            <td>06 87 65 43 21</td>
+            <td>2026-01-11</td>
+            <td>14:00</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Check Out Section -->
+    <div class="content-section" *ngIf="activeSection === 'checkout'">
+      <div class="page-header">
+        <h1><i class="fas fa-sign-out-alt"></i> Check Out</h1>
+        <p class="page-subtitle">List of clients who have left the hotel</p>
+      </div>
+
+      <div class="clients-table-container">
+        <table class="clients-table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Date de réservation</th>
+            <th>Check Out</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>1</td>
+            <td>Amine</td>
+            <td>Karim</td>
+            <td>amine.k@example.com</td>
+            <td>06 22 33 44 55</td>
+            <td>2026-01-08</td>
+            <td>10:00</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Sofia</td>
+            <td>Lahmar</td>
+            <td>sofia.l@example.com</td>
+            <td>06 99 88 77 66</td>
+            <td>2026-01-09</td>
+            <td>12:00</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rooms Section -->
+    <div class="content-section" *ngIf="activeSection === 'rooms'">
+      <div class="page-header">
+        <h1><i class="fas fa-bed"></i> ALL Rooms</h1>
+      </div>
+
+      <div class="rooms-table-container">
+        <table class="rooms-table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Numéro</th>
+            <th>Type</th>
+            <th>Prix</th>
+            <th>Status</th>
+            <th>Date de réservation</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let room of rooms; let i = index">
+            <td>{{ i + 1 }}</td>
             <td>{{ room.numero }}</td>
             <td>{{ room.type }}</td>
             <td>{{ room.prix }} MAD</td>
             <td>
-          <span class="status" [ngClass]="{
+             <span class="status" [ngClass]="{
             'available': room.etat === 'Disponible',
             'occupied': room.etat === 'Occupée',
             'maintenance': room.etat === 'Maintenance'
@@ -280,98 +306,13 @@
             {{ room.etat }}
           </span>
             </td>
-            <td>{{ room.description }}</td>
             <td>
-              <img [src]="'http://localhost:8093/uploads/' + room.image" alt="Room image" />
-            </td>
-            <td>{{ room.taux }} %</td>
-            <td>{{ room.lit_long }} x {{ room.lit_large }} cm</td>
-            <td>
-              <button class="btn-sm edit" (click)="editRoom(room)">Éditer</button>
-              <button class="btn-sm delete" (click)="deleteRoom(room.id)">Supprimer</button>
+              2026-01-09
             </td>
           </tr>
           </tbody>
         </table>
       </div>
-    </div>
-
-
-    <!-- ===== CREATE ROOM MODAL ===== -->
-    <div class="modal" *ngIf="createRoomModalOpen">
-      <div class="modal-overlay" (click)="closeCreateRoomModal()"></div>
-      <div class="modal-content">
-        <span class="close" (click)="closeCreateRoomModal()">&times;</span>
-        <h2>{{ isEditMode ? 'Modifier une chambre' : 'Créer une nouvelle chambre' }}</h2>
-
-        <form (ngSubmit)="submitRoom()">
-
-          <!-- Basic info -->
-          <input [(ngModel)]="selectedRoom.numero" name="numero" placeholder="Numéro" required>
-          <select [(ngModel)]="selectedRoom.type" name="type" required>
-            <option>Single</option>
-            <option>Double</option>
-            <option>Suite</option>
-          </select>
-          <input type="number" [(ngModel)]="selectedRoom.prix" name="prix" placeholder="Prix (MAD)" required>
-          <select [(ngModel)]="selectedRoom.etat" name="etat" required>
-            <option>Disponible</option>
-            <option>Occupée</option>
-            <option>Maintenance</option>
-          </select>
-
-          <!-- Additional fields -->
-          <textarea [(ngModel)]="selectedRoom.description" name="description" placeholder="Description"></textarea>
-          <input type="number" [(ngModel)]="selectedRoom.taux" name="taux" placeholder="Taux (%)">
-          <input type="number" [(ngModel)]="selectedRoom.lit_long" name="lit_long" placeholder="Longueur lit (cm)">
-          <input type="number" [(ngModel)]="selectedRoom.lit_large" name="lit_large" placeholder="Largeur lit (cm)">
-
-          <!-- Image -->
-          <label>Image de la chambre</label>
-          <input type="file" (change)="onImageSelected($event)" accept="image/*">
-          <div *ngIf="imagePreview">
-            <p>Aperçu:</p>
-            <img [src]="imagePreview" alt="Room Image" style="max-width:200px; max-height:150px;">
-          </div>
-
-          <button type="submit" class="btn-sm create-room">
-            {{ isEditMode ? 'Modifier' : 'Créer' }}
-          </button>
-        </form>
-
-      </div>
-    </div>
-
-
-
-    <div class="content-section" *ngIf="activeSection === 'services'">
-
-      <div class="page-header">
-        <h1><i class="fas fa-users"></i> Internal Services</h1>
-        <p class="page-subtitle">Liste des employés et leurs horaires</p>
-      </div>
-
-      <div class="internal-services-table">
-        <table>
-          <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Email</th>
-            <th>Role</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let user of internalUsers">
-            <td>{{ user.nom }}</td>
-            <td>{{ user.prenom }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.metierRole }}</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-
     </div>
 
     <!-- Settings Section -->

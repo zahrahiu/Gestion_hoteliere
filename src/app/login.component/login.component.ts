@@ -70,6 +70,7 @@ export class LoginComponent {
          if (response.roles?.includes('ADMIN')) this.router.navigate(['/admin']);
 
         else if (response.roles?.includes('MANAGER')) this.router.navigate(['/manager']);
+         else if (response.roles?.includes('RECEPTIONNISTE')) this.router.navigate(['/reception']);
         else if (response.roles?.includes('CLIENT')) this.router.navigate(['/catalogue']);
         else if (response.roles?.includes('HOUSEKEEPING')) this.router.navigate(['/housekeeping']);
         else this.router.navigate(['/dashboard']);
