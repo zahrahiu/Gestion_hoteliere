@@ -90,6 +90,21 @@ export class AuthService {
     );
   }
 
+
+  // في auth.service.ts
+  getUserRole(): string {
+    const token = this.getToken();
+    if (!token) return '';
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.roles[0] || '';
+  }
+
+  hasRole(role: string): boolean {
+    const userRole = this.getUserRole();
+    return userRole === role || userRole === 'ADMIN';
+  }
+
   isAdmin(): boolean {
     const user = this.getCurrentUser();
     return user?.roles?.includes('ADMIN') || false;
@@ -98,4 +113,21 @@ export class AuthService {
   getToken(): string | null {
     return localStorage.getItem('token');
   }
+
+  getUserId(): number {
+    const token = this.getToken();
+    if (!token) return 0;
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.userId;
+  }
+
+  getUserName(): string {
+    const token = this.getToken();
+    if (!token) return '';
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.prenom + ' ' + payload.nom;
+  }
+
 }

@@ -270,4 +270,21 @@ export class ProfileComponent implements OnInit {
   showNotification(message: string): void {
     alert(message);
   }
+
+  getMemberSince(createdAt: string): string {
+    const createdDate = new Date(createdAt);
+    const now = new Date();
+
+    const diffMs = now.getTime() - createdDate.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "aujourd’hui";
+    if (diffDays === 1) return "il y a 1 jour";
+    if (diffDays < 30) return `il y a ${diffDays} jours`;
+    if (diffDays < 365) return `il y a ${Math.floor(diffDays / 30)} mois`;
+
+    const years = Math.floor(diffDays / 365);
+    return `il y a ${years} an${years > 1 ? 's' : ''}`;
+  }
+
 }
