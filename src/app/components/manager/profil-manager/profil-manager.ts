@@ -5,6 +5,7 @@ import {HttpClient, HttpClientModule} from '@angular/common/http';
 import {RoomService} from '../../../services/room.service';
 import {UserProfileService} from '../../../services/user-profile.service';
 import {UserResponseDTO, UserService} from '../../../services/user.service';
+import {AuthService} from '../../../services/auth.service';
 
 @Component({
   selector: 'app-profil-manager',
@@ -30,7 +31,7 @@ export class ProfilManager implements OnInit{
   activeSection = 'profile';
   showModal = false;
   modalMessage = '';
-  pendingAction: string = '';
+  pendingAction: string | null = null;
   reportForm: FormGroup;
 
 
@@ -61,7 +62,8 @@ export class ProfilManager implements OnInit{
   constructor(
     private fb: FormBuilder,
     private roomService: RoomService,
-    private userProfileService: UserProfileService
+    private userProfileService: UserProfileService,
+    private authService: AuthService,
   ) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
@@ -277,10 +279,19 @@ export class ProfilManager implements OnInit{
 
 
   logout(): void {
-    this.modalMessage = 'Êtes-vous sûr de vouloir vous déconnecter?';
+    this.modalMessage = 'Êtes-vous sûr de vouloir vous déconnecter ?';
     this.pendingAction = 'logout';
     this.showModal = true;
   }
+
+  confirmAction(): void {
+    if (this.pendingAction === 'logout') {
+      this.authService.logout();
+    }
+    this.showModal = false;
+    this.pendingAction = null;
+  }
+
 
   //-----------------------------------------------------------------------------------------------------
   deleteAccount(): void {
@@ -289,21 +300,6 @@ export class ProfilManager implements OnInit{
     this.showModal = true;
   }
 
-  confirmAction(): void {
-    this.showModal = false;
-
-    if (this.pendingAction === 'logout') {
-      // Logique de déconnexion
-      console.log('Déconnexion...');
-      this.showNotification('Déconnexion réussie!');
-    } else if (this.pendingAction === 'deleteAccount') {
-      // Logique de suppression de compte
-      console.log('Compte supprimé...');
-      this.showNotification('Compte supprimé avec succès!');
-    }
-
-    this.pendingAction = '';
-  }
 
   showNotification(message: string): void {
     // Simuler une notification
