@@ -33,6 +33,7 @@ export class UserListComponent implements OnInit {
   displayedColumns: string[] = ['id', 'email', 'name', 'roles', 'status', 'actions'];
   users: UserResponseDTO[] = [];
   loading = false;
+  statusUpdatingIds: number[] = []; // Pour suivre quels utilisateurs sont en cours de mise à jour
 
   constructor(
     private userService: UserService,
@@ -47,12 +48,16 @@ export class UserListComponent implements OnInit {
   // ===================== LOAD USERS =====================
   loadUsers(): void {
     this.loading = true;
+    console.log('📋 [UserList] Loading users...');
+    
     this.userService.getAllUsers().subscribe({
       next: (users) => {
+        console.log('✅ [UserList] Users loaded:', users.length);
         this.users = users;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
+        console.error('❌ [UserList] Error loading users:', error);
         this.loading = false;
         this.showError('Erreur lors du chargement des utilisateurs');
       }
@@ -74,7 +79,8 @@ export class UserListComponent implements OnInit {
         this.loading = false;
         this.showSuccess('Utilisateur supprimé avec succès');
       },
-      error: () => {
+      error: (error) => {
+        console.error('❌ [UserList] Delete error:', error);
         this.loading = false;
         this.showError('Erreur lors de la suppression');
       }
@@ -85,44 +91,68 @@ export class UserListComponent implements OnInit {
   toggleUserStatus(user: UserResponseDTO): void {
     const newStatus = !user.active;
     const action = newStatus ? 'activer' : 'désactiver';
+    const actionPast = newStatus ? 'activé' : 'désactivé';
+
+    console.log(`🔄 [UserList] Toggling user ${user.id} (${user.email}) from ${user.active} to ${newStatus}`);
 
     const ok = window.confirm(
       `Êtes-vous sûr de vouloir ${action} ${user.firstName} ${user.lastName} ?`
     );
     if (!ok) return;
 
+    // Ajouter l'ID à la liste des mises à jour en cours
+    this.statusUpdatingIds.push(user.id);
+
     this.userService.toggleUserStatus(user.id, newStatus).subscribe({
-      next: () => {
-        user.active = newStatus;
-        this.showSuccess(`Utilisateur ${action} avec succès`);
-      },
-      error: () => {
-        this.showError(`Erreur lors de la ${action}`);
+     next: (updatedUser) => {
+  console.log('✅ Utilisateur mis à jour :', updatedUser);
+  
+  // 🔥 On recharge la liste des utilisateurs pour que le changement apparaisse immédiatement
+  this.loadUsers();  // cette étape est nécessaire
+  
+  this.statusUpdatingIds = this.statusUpdatingIds.filter(id => id !== user.id);
+  this.showSuccess(`L'utilisateur a été ${actionPast} avec succès`);
+},
+
+      error: (error) => {
+        console.error(`❌ [UserList] Error ${action} user:`, error);
+        
+        // Retirer l'ID de la liste des mises à jour
+        this.statusUpdatingIds = this.statusUpdatingIds.filter(id => id !== user.id);
+        
+        this.showError(`Erreur lors de la ${action}: ${error.message || 'Vérifiez la console'}`);
       }
     });
   }
 
-  // ===================== ROLES =====================
-  getRoleClass(role: string): string {
-    return {
-      ADMIN: 'role-admin',
-      MANAGER: 'role-manager',
-      HOUSEKEEPING: 'role-housekeeping',
-      RECEPTIONNISTE: 'role-receptionniste',
-      MAINTENANCE: 'role-maintenance',
-      COMPTABLE: 'role-comptable'
-    }[role] || 'role-default';
+  // Vérifie si un utilisateur est en cours de mise à jour
+  isStatusUpdating(userId: number): boolean {
+    return this.statusUpdatingIds.includes(userId);
   }
 
+  // ===================== ROLES =====================
   getRoleDisplayName(role: string): string {
-    return {
+    const roleMap: { [key: string]: string } = {
       ADMIN: 'Admin',
       MANAGER: 'Manager',
       HOUSEKEEPING: 'Housekeeping',
       RECEPTIONNISTE: 'Réceptionniste',
       MAINTENANCE: 'Maintenance',
-      COMPTABLE: 'Comptable'
-    }[role] || role;
+      COMPTABLE: 'Comptable',
+    };
+    return roleMap[role] || role;
+  }
+
+  getRoleClass(role: string): string {
+    const classMap: { [key: string]: string } = {
+      ADMIN: 'role-admin',
+      MANAGER: 'role-manager',
+      HOUSEKEEPING: 'role-housekeeping',
+      RECEPTIONNISTE: 'role-receptionniste',
+      MAINTENANCE: 'role-maintenance',
+      COMPTABLE: 'role-comptable',
+    };
+    return classMap[role] || 'role-default';
   }
 
   // ===================== SNACKBAR =====================
@@ -130,15 +160,17 @@ export class UserListComponent implements OnInit {
     this.snackBar.open(`✓ ${message}`, 'Fermer', {
       duration: 3000,
       horizontalPosition: 'right',
-      verticalPosition: 'bottom'
+      verticalPosition: 'bottom',
+      panelClass: ['success-snackbar']
     });
   }
 
   showError(message: string): void {
     this.snackBar.open(`✗ ${message}`, 'Fermer', {
-      duration: 4000,
+      duration: 5000,
       horizontalPosition: 'right',
-      verticalPosition: 'bottom'
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar']
     });
   }
 }

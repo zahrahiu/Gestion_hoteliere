@@ -30,7 +30,7 @@ export interface CreateUserRequest {
   password: string;
   firstName: string;
   lastName: string;
-  roles: string[];
+  role: string[];
 }
 
 export interface UpdateUserRequest {
@@ -179,22 +179,53 @@ export class UserService {
 
   // =============== دوال إضافية ===============
 
-  toggleUserStatus(id: number, active: boolean): Observable<UserResponseDTO> {
-    console.log('🔄 [UserService] Toggling status for user:', id, 'to', active);
-    
-    return this.http.patch<UserResponseDTO>(
-      `${this.apiUrl}/users/${id}/status`,
-      { active },
-      { headers: this.getHeaders() }
-    ).pipe(
-      tap({
-        next: (user) => {
-          console.log('✅ [UserService] Status toggled for:', user.email);
-        }
-      }),
-      catchError(this.handleError.bind(this))
-    );
-  }
+  // Dans user.service.ts - modifier la méthode toggleUserStatus
+
+toggleUserStatus(id: number, active: boolean): Observable<UserResponseDTO> {
+  console.log('🔄 [UserService] Toggling status for user:', id, 'to', active);
+  console.log('📤 [UserService] Sending payload:', { active });
+  console.log('🌐 [UserService] URL:', `${this.apiUrl}/users/${id}/status`);
+  
+  // Option 1: Avec body
+  return this.http.patch<UserResponseDTO>(
+    `${this.apiUrl}/users/${id}/status`,
+    { active: active },
+    { 
+      headers: this.getHeaders(),
+      observe: 'response' // Pour voir la réponse complète
+    }
+  ).pipe(
+    tap({
+      next: (response) => {
+        console.log('✅ [UserService] Status toggled successfully!');
+        console.log('📥 [UserService] Response status:', response.status);
+        console.log('📥 [UserService] Response body:', response.body);
+      },
+      error: (error) => {
+        console.error('❌ [UserService] Error toggling status:');
+        console.error('Status:', error.status);
+        console.error('Error:', error.error);
+        console.error('Headers:', error.headers);
+      }
+    }),
+    map(response => response.body as UserResponseDTO),
+    catchError(this.handleError.bind(this))
+  );
+
+  // OU Option 2: Avec query parameter (si l'API l'attend ainsi)
+  // return this.http.patch<UserResponseDTO>(
+  //   `${this.apiUrl}/users/${id}/status?active=${active}`,
+  //   {},
+  //   { headers: this.getHeaders() }
+  // ).pipe(...);
+
+  // OU Option 3: Utiliser PUT au lieu de PATCH
+  // return this.http.put<UserResponseDTO>(
+  //   `${this.apiUrl}/users/${id}/status`,
+  //   { active },
+  //   { headers: this.getHeaders() }
+  // ).pipe(...);
+}
 
   getAllRoles(): Observable<Role[]> {
     console.log('🔄 [UserService] Fetching all roles...');

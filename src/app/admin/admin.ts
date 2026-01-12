@@ -301,9 +301,8 @@ const profileSub = this.profileService.getAllProfiles().subscribe({
   }
 
   navigateToProfile(): void {
-    this.router.navigate(['/profile']);
-  }
-
+  this.router.navigate(['/admin/profile']);  // ✅ Bonne route
+}
   getPageTitle(): string {
     const titles: {[key: string]: string} = {
       '/admin': 'Tableau de bord',
@@ -376,7 +375,7 @@ const profileSub = this.profileService.getAllProfiles().subscribe({
         this.router.navigate(['/admin/bookings'], { queryParams: { filter: 'today' } });
         break;
       case 'pending_profiles':
-        this.router.navigate(['/admin/profiles']);
+        this.router.navigate(['/admin/profile']);
         break;
       case 'maintenance':
         this.router.navigate(['/admin/rooms']);
@@ -439,5 +438,44 @@ testStorage(): void {
 
 
 
+
+
+
+
+// Ajoutez ces méthodes à votre classe Admin
+
+quickAction(action: string): void {
+  switch(action) {
+    case 'newUser':
+      this.router.navigate(['/admin/users/new']);
+      break;
+    case 'newBooking':
+      this.router.navigate(['/admin/bookings/new']);
+      break;
+    case 'reports':
+      this.generateReport();
+      break;
+  }
+  this.showSnackbar(`Action: ${action}`, 'OK');
+}
+
+generateReport(): void {
+  this.showSnackbar('Génération du rapport en cours...', 'OK');
+  // Implémentez la logique de génération de rapport ici
+}
+
+refreshDashboard(): void {
+  this.loading = true;
+  this.loadStats();
+  this.loadNotifications();
+  setTimeout(() => {
+    this.loading = false;
+    this.showSnackbar('Tableau de bord actualisé', 'OK');
+  }, 1000);
+}
+
+get currentDate(): Date {
+  return new Date();
+}
 
 }

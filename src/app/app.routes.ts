@@ -9,7 +9,6 @@ import {HomeComponent} from './home/home';
 import {LoginComponent} from './login.component/login.component';
 import {RoomDetails} from './room-details/room-details';
 import {ReceptionProfile} from './components/reception-profile/reception-profile';
-
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
@@ -51,6 +50,12 @@ export const routes: Routes = [
           import('./admin/roles/roles')
             .then(m => m.RolesComponent)
       },
+      {
+  path: 'profile',
+  loadComponent: () =>
+    import('./admin/admin-profile/admin-profile')
+      .then(m => m.AdminProfileComponent)
+}
 
     ]
   },
