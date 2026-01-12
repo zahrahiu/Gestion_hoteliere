@@ -1,9 +1,10 @@
-// src/app/services/user.service.ts - الإصلاح الكامل
+// src/app/services/user.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap, map } from 'rxjs/operators'; // تأكد من استيراد map
+import { catchError, tap, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service'; // أضف هذا الاستيراد
 
 export interface UserResponseDTO {
   id: number;
@@ -48,12 +49,23 @@ export class UserService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService // أضف هذا
   ) {}
 
-  // تأكد أن جميع الدوال محددة بشكل صحيح
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('accessToken');
+    // استخدم authService للحصول على التوكن
+    const token = this.authService.getToken();
+    
+    if (!token) {
+      console.error('❌ [UserService] No token available!');
+      this.router.navigate(['/login']);
+    }
+    
+    console.log('🔑 [UserService] Using token for request:', {
+      tokenExists: !!token,
+      firstChars: token ? token.substring(0, 20) + '...' : 'none'
+    });
     
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
@@ -61,52 +73,85 @@ export class UserService {
     });
   }
 
-  // =============== الدوال العامة ===============
+  // =============== الدوال الرئيسية ===============
 
-  // ✅ تأكد أن createUser موجودة
+  getAllUsers(): Observable<UserResponseDTO[]> {
+    console.log('🔄 [UserService] Fetching all users...');
+    console.log('🌐 API URL:', `${this.apiUrl}/users`);
+    
+    return this.http.get<UserResponseDTO[]>(
+      `${this.apiUrl}/users`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap({
+        next: (users) => {
+          console.log('✅ [UserService] Users fetched successfully!');
+          console.log('📊 Number of users:', users.length);
+          if (users.length > 0) {
+            console.log('👤 First user:', users[0]);
+          }
+        },
+        error: (error) => {
+          console.error('❌ [UserService] Error fetching users:', error);
+        }
+      }),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  getUserById(id: number): Observable<UserResponseDTO> {
+    console.log('🔄 [UserService] Fetching user by ID:', id);
+    
+    return this.http.get<UserResponseDTO>(
+      `${this.apiUrl}/users/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap({
+        next: (user) => {
+          console.log('✅ [UserService] User fetched:', user.email);
+        }
+      }),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
   createUser(userData: CreateUserRequest): Observable<UserResponseDTO> {
+    console.log('🔄 [UserService] Creating new user:', userData.email);
+    
     return this.http.post<UserResponseDTO>(
       `${this.apiUrl}/users/create`,
       userData,
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError)
+      tap({
+        next: (createdUser) => {
+          console.log('✅ [UserService] User created successfully:', createdUser);
+        }
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 
-  // ✅ تأكد أن getAllUsers موجودة
-  getAllUsers(): Observable<UserResponseDTO[]> {
-    return this.http.get<UserResponseDTO[]>(
-      `${this.apiUrl}/users`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // ✅ تأكد أن getUserById موجودة
-  getUserById(id: number): Observable<UserResponseDTO> {
-    return this.http.get<UserResponseDTO>(
-      `${this.apiUrl}/users/${id}`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // ✅ تأكد أن updateUser موجودة
   updateUser(id: number, data: UpdateUserRequest): Observable<UserResponseDTO> {
+    console.log('🔄 [UserService] Updating user:', id, data);
+    
     return this.http.patch<UserResponseDTO>(
       `${this.apiUrl}/users/${id}`,
       data,
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError)
+      tap({
+        next: (updatedUser) => {
+          console.log('✅ [UserService] User updated:', updatedUser.email);
+        }
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 
-  // ✅ تأكد أن deleteUser موجودة
   deleteUser(id: number): Observable<any> {
+    console.log('🔄 [UserService] Deleting user:', id);
+    
     return this.http.delete(
       `${this.apiUrl}/users/${id}`,
       { 
@@ -116,9 +161,9 @@ export class UserService {
       }
     ).pipe(
       tap(response => {
-        console.log('✅ Delete Response:', response);
+        console.log('✅ [UserService] Delete response status:', response.status);
       }),
-      map((response: any) => {  // أضف النوع هنا
+      map((response: any) => {
         try {
           return JSON.parse(response.body || '{}');
         } catch {
@@ -128,45 +173,56 @@ export class UserService {
           };
         }
       }),
-      catchError(this.handleError)
-    );
-  }
-
-  // ✅ تأكد أن getAllRoles موجودة
-  getAllRoles(): Observable<Role[]> {
-    return this.http.get<Role[]>(
-      `${this.apiUrl}/roles`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError)
+      catchError(this.handleError.bind(this))
     );
   }
 
   // =============== دوال إضافية ===============
 
   toggleUserStatus(id: number, active: boolean): Observable<UserResponseDTO> {
+    console.log('🔄 [UserService] Toggling status for user:', id, 'to', active);
+    
     return this.http.patch<UserResponseDTO>(
       `${this.apiUrl}/users/${id}/status`,
       { active },
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError)
+      tap({
+        next: (user) => {
+          console.log('✅ [UserService] Status toggled for:', user.email);
+        }
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 
-  updatePassword(id: number, currentPassword: string, newPassword: string): Observable<any> {
-    return this.http.put(
-      `${this.apiUrl}/users/${id}/password`,
-      { currentPassword, newPassword },
+  getAllRoles(): Observable<Role[]> {
+    console.log('🔄 [UserService] Fetching all roles...');
+    
+    return this.http.get<Role[]>(
+      `${this.apiUrl}/roles`,
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError)
+      tap({
+        next: (roles) => {
+          console.log('✅ [UserService] Roles fetched:', roles.length);
+        }
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 
   // =============== معالجة الأخطاء ===============
 
   private handleError(error: HttpErrorResponse): Observable<never> {
+    console.error('❌ [UserService] Error occurred:', {
+      status: error.status,
+      statusText: error.statusText,
+      url: error.url,
+      message: error.message,
+      error: error.error
+    });
+    
     let errorMessage = 'Une erreur est survenue';
     
     if (error.error?.message) {
@@ -175,21 +231,29 @@ export class UserService {
       const errors = error.error.errors;
       errorMessage = Object.values(errors).flat().join(', ');
     } else if (error.status === 0) {
-      errorMessage = 'Impossible de se connecter au serveur';
+      errorMessage = 'Impossible de se connecter au serveur. Vérifiez que le serveur est démarré sur le port 8070.';
     } else if (error.status === 400) {
-      errorMessage = 'Données invalides';
+      errorMessage = 'Données invalides envoyées';
     } else if (error.status === 401) {
       errorMessage = 'Session expirée. Veuillez vous reconnecter.';
-      setTimeout(() => this.router.navigate(['/login']), 2000);
+      // تأخير قليل قبل التوجيه
+      setTimeout(() => {
+        this.authService.logout();
+        this.router.navigate(['/login'], { 
+          queryParams: { returnUrl: this.router.url } 
+        });
+      }, 2000);
     } else if (error.status === 403) {
-      errorMessage = 'Accès refusé';
+      errorMessage = 'Accès refusé. Vous n\'avez pas les permissions nécessaires.';
     } else if (error.status === 404) {
       errorMessage = 'Ressource non trouvée';
     } else if (error.status === 409) {
       errorMessage = 'Conflit: Données déjà existantes';
     } else if (error.status === 500) {
-      errorMessage = 'Erreur interne du serveur';
+      errorMessage = 'Erreur interne du serveur. Veuillez réessayer plus tard.';
     }
+    
+    console.error('📋 [UserService] Error message to display:', errorMessage);
     
     return throwError(() => ({
       message: errorMessage,
