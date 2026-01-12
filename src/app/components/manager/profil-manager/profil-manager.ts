@@ -195,6 +195,14 @@ export class ProfilManager implements OnInit{
   }
 
 
+  // Méthode pour calculer % par statut
+  getRoomStatusPercentage(status: string): number {
+    if (!this.rooms || this.rooms.length === 0) return 0;
+    const count = this.rooms.filter(r => r.etat === status).length;
+    return Math.round((count / this.rooms.length) * 100);
+  }
+
+
   submitRoom() {
     if (!this.selectedRoom) return;
 
