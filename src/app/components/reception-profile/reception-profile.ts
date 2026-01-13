@@ -4,6 +4,7 @@ import {NgClass, NgForOf, NgIf} from '@angular/common';
 import {HttpClientModule} from '@angular/common/http';
 import {RoomService} from '../../services/room.service';
 import {UserProfileService} from '../../services/user-profile.service';
+import {AuthService} from '../../services/auth.service';
 
 
 @Component({
@@ -27,7 +28,7 @@ export class ReceptionProfile implements OnInit{
   activeSection = 'profile';
   showModal = false;
   modalMessage = '';
-  pendingAction: string = '';
+  pendingAction: string | null = null;
   reportForm: FormGroup;
 
   // Settings
@@ -57,7 +58,8 @@ export class ReceptionProfile implements OnInit{
   constructor(
     private fb: FormBuilder,
     private roomService: RoomService,
-    private userProfileService: UserProfileService
+    private userProfileService: UserProfileService,
+    private authService: AuthService,
   ) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
@@ -195,20 +197,13 @@ export class ReceptionProfile implements OnInit{
   }
 
   confirmAction(): void {
-    this.showModal = false;
-
     if (this.pendingAction === 'logout') {
-      // Logique de déconnexion
-      console.log('Déconnexion...');
-      this.showNotification('Déconnexion réussie!');
-    } else if (this.pendingAction === 'deleteAccount') {
-      // Logique de suppression de compte
-      console.log('Compte supprimé...');
-      this.showNotification('Compte supprimé avec succès!');
+      this.userProfileService.logout();
     }
-
-    this.pendingAction = '';
+    this.showModal = false;
+    this.pendingAction = null;
   }
+
 
   showNotification(message: string): void {
     // Simuler une notification

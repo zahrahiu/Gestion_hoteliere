@@ -112,7 +112,10 @@
             </div>
             <div class="avatar-info">
               <h3>{{user.nom}} {{user.prenom}}</h3>
-              <p>Membre depuis 2023</p>
+              <p *ngIf="user.created_at">
+                Membre depuis {{ getMemberSince(user.created_at) }}
+              </p>
+
             </div>
           </div>
         </div>
@@ -163,7 +166,7 @@
               </div>
 
               <div class="form-group">
-                <label for="cne">CNE *</label>
+                <label for="cne">CNI *</label>
                 <input type="text" id="cni" formControlName="cni" placeholder="Votre CNI">
               </div>
             </div>

@@ -183,13 +183,13 @@
       <!-- ===== STATS CARDS ===== -->
       <div class="stats-cards">
         <div class="stat-card">
-          <h3>Total Users</h3>
-          <p>120</p>
+          <h3>Total Internal Services</h3>
+          <p>{{ internalUsers.length }}</p>
         </div>
 
         <div class="stat-card">
-          <h3>Chambres</h3>
-          <p>45</p>
+          <h3>Total Rooms</h3>
+          <p>{{ rooms.length }}</p>
         </div>
 
         <div class="stat-card">
@@ -221,24 +221,33 @@
 
         <!-- Progress Chart -->
         <div class="chart-card">
-          <h3>Taux d’occupation</h3>
+          <h3>Taux d’occupation des chambres</h3>
 
           <div class="progress-item">
             <span>Chambres occupées</span>
             <div class="progress-bar">
-              <div class="progress-fill" style="width:75%"></div>
+              <div class="progress-fill occupied" [style.width.%]="getRoomStatusPercentage('Occupée')"></div>
             </div>
-            <strong>75%</strong>
+            <strong>{{ getRoomStatusPercentage('Occupée') }}%</strong>
           </div>
 
           <div class="progress-item">
-            <span>Disponibilité</span>
+            <span>Disponibles</span>
             <div class="progress-bar">
-              <div class="progress-fill" style="width:25%"></div>
+              <div class="progress-fill available" [style.width.%]="getRoomStatusPercentage('Disponible')"></div>
             </div>
-            <strong>25%</strong>
+            <strong>{{ getRoomStatusPercentage('Disponible') }}%</strong>
+          </div>
+
+          <div class="progress-item">
+            <span>Maintenance</span>
+            <div class="progress-bar">
+              <div class="progress-fill maintenance" [style.width.%]="getRoomStatusPercentage('Maintenance')"></div>
+            </div>
+            <strong>{{ getRoomStatusPercentage('Maintenance') }}%</strong>
           </div>
         </div>
+
 
       </div>
     </div>
@@ -359,6 +368,7 @@
             <th>Prénom</th>
             <th>Email</th>
             <th>Role</th>
+            <th>Status</th>
           </tr>
           </thead>
           <tbody>
@@ -367,6 +377,17 @@
             <td>{{ user.prenom }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.metierRole }}</td>
+            <td>
+              <span [ngClass]="{
+                    'status-onwork': user.status === 'ON_WORK',
+                    'status-outwork': user.status === 'OUT_WORK',
+                    'status-draft': user.status === 'DRAFT'
+                  }">
+                {{ user.status }}
+              </span>
+            </td>
+
+
           </tr>
           </tbody>
         </table>
