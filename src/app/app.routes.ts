@@ -55,7 +55,15 @@ export const routes: Routes = [
   loadComponent: () =>
     import('./admin/admin-profile/admin-profile')
       .then(m => m.AdminProfileComponent)
+},
+
+ {
+  path: 'room-stats',
+  loadComponent: () =>
+    import('./admin/room-stats/room-stats')
+      .then(m => m.RoomStats)
 }
+
 
     ]
   },

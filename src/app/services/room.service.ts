@@ -72,4 +72,9 @@ export class RoomService {
   }
 
 
+getRoomStats(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/stats`, this.getHeaders());
+}
+
+ 
 }
