@@ -5,6 +5,9 @@ import {HttpClientModule} from '@angular/common/http';
 import {RoomService} from '../../services/room.service';
 import {UserProfileService} from '../../services/user-profile.service';
 import {AuthService} from '../../services/auth.service';
+import {ReservationService} from '../../services/reservation.service';
+import { DatePipe, DecimalPipe } from '@angular/common';
+
 
 
 @Component({
@@ -15,7 +18,9 @@ import {AuthService} from '../../services/auth.service';
     NgIf,
     ReactiveFormsModule,
     HttpClientModule,
-    NgClass
+    NgClass,
+    DatePipe,      // <-- ajouté
+    DecimalPipe    // <-- ajouté
   ],
   templateUrl: './reception-profile.html',
   styleUrl: './reception-profile.css',
@@ -60,6 +65,7 @@ export class ReceptionProfile implements OnInit{
     private roomService: RoomService,
     private userProfileService: UserProfileService,
     private authService: AuthService,
+    private reservationService: ReservationService
   ) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
@@ -80,7 +86,8 @@ export class ReceptionProfile implements OnInit{
   ngOnInit() {
     this.testMeEndpoint();
     this.loadMyProfile();
-    this.loadRooms()
+    this.loadRooms();
+    this.loadReservations();
   }
 
   loadRooms() {
@@ -224,5 +231,53 @@ export class ReceptionProfile implements OnInit{
   toggleRooms() {
     this.roomsOpen = !this.roomsOpen;
   }
+
+
+  reservations: any[] = [];
+
+  loadReservations() {
+    this.reservationService.getAllReservations().subscribe({
+      next: (data: any) => {
+        console.log('Reservations enrichies:', data);
+        this.reservations = data.reservations || [];
+      },
+      error: (err) => console.error('Erreur fetching reservations', err)
+    });
+  }
+
+  confirmReservation(res: any, status: string) {
+    this.reservationService.updateStatus(res.idReservation, status)
+      .subscribe({
+        next: () => {
+          res.statut = status;
+
+          this.roomService.toggleRoomState(res.chambre_id)
+            .subscribe({
+              next: () => console.log('Room now occupée'),
+              error: err => console.error('Toggle room error', err)
+            });
+        },
+        error: err => {
+          console.error(err);
+          alert('Erreur lors de la confirmation');
+        }
+      });
+  }
+
+
+  rejectReservation(res: any, status: string) {
+    this.reservationService.updateStatus(res.idReservation, status)
+      .subscribe({
+        next: updated => {
+          res.statut = status;
+        },
+        error: err => {
+          console.error(err);
+          alert('Erreur lors du rejet');
+        }
+      });
+  }
+
+
 
 }

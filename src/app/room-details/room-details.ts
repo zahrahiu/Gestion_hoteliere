@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import {ActivatedRoute, Router, RouterModule} from '@angular/router';
+
 import { RoomService } from '../services/room.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
+import { ReservationService } from '../services/reservation.service';
+import {routes} from '../app.routes';
+
 
 @Component({
   selector: 'app-room-details',
@@ -28,7 +32,9 @@ export class RoomDetails {
   constructor(
     private route: ActivatedRoute,
     private roomService: RoomService,
-    private authService: AuthService
+    private authService: AuthService,
+    private reservationService: ReservationService,
+    private router: Router
 
   ) {
     const roomId = +this.route.snapshot.paramMap.get('id')!;
@@ -54,8 +60,6 @@ export class RoomDetails {
       });
     }
   }
-
-
 
 
   showModal = false; // <-- Angular variable to control modal
@@ -97,29 +101,44 @@ export class RoomDetails {
     this.showModal = false;
   }
 
-  submitReservation() {
+  submitReservation(event?: Event) {
+    if(event) event.preventDefault(); // <--- prevent page reload
 
-    // 1️⃣ نوجد data ديال client
     const clientUpdate = {
       tel: this.reservation.tel,
       cni: this.reservation.cni,
       dateNaissance: this.reservation.dob
     };
 
-    // 2️⃣ نحدّث client ف DB
     this.authService.updateClientProfile(clientUpdate).subscribe({
       next: () => {
-        console.log('Client profile updated');
+        const start = new Date(this.reservation.startDate);
+        const end = new Date(this.reservation.endDate);
+        const nuits = (end.getTime() - start.getTime()) / (1000*60*60*24);
+        const totalPrix = parseFloat((nuits * this.room.prix).toFixed(2));
 
-        // 3️⃣ من بعد دير reservation
-        console.log('Reservation data:', this.reservation);
+        const reservationPayload = {
+          client_id: this.authService.getUserId(),
+          chambre_id: this.room.id,
+          dateDebut: this.reservation.startDate,
+          dateFin: this.reservation.endDate,
+          nombrePersonnes: 1,
+          typeChambre: this.room.type,
+          photoActeMariage: "",
+          totalPrix: totalPrix,
+          statut: "pending"
+        };
 
-        alert('Reservation confirmed!');
-        this.closeModal();
+        this.reservationService.createReservation(reservationPayload).subscribe({
+          next: (res) => {
+            this.closeModal();
+            this.router.navigate(['/waiting-reservation', res.idReservation]); // redirect
+          }
+        });
       },
       error: (err) => {
-        console.error('Error updating client', err);
-        alert('Erreur lors de la mise à jour du profil');
+        console.error('Client update error', err);
+        alert('Error updating client profile');
       }
     });
   }
