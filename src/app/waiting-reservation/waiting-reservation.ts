@@ -30,23 +30,9 @@ export class WaitingReservation implements OnInit, OnDestroy{
     }
 
     const id = +this.route.snapshot.params['id'];
-    this.loadReservation(id);
-
-    // Polling
-    this.intervalId = setInterval(() => this.loadReservation(id), 5000);
   }
 
 
-  loadReservation(id: number) {
-    this.reservationService.getReservationById(id).subscribe({
-      next: res => this.reservation = res,
-      error: err => {
-        console.error(err);
-        alert('Error loading reservation. Maybe your session expired!');
-        this.router.navigate(['/login']);
-      }
-    });
-  }
 
   ngOnDestroy() {
     if (this.intervalId) clearInterval(this.intervalId);

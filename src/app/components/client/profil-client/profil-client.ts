@@ -2,6 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
+import {Router} from '@angular/router';
+import { ReservationService } from '../../../services/reservation.service';
+
+interface Reservation {
+  idReservation: number;
+  statut: string;
+  dateDebut: string;
+  chambre?: { numero?: string };
+  chambre_id?: string;
+}
 
 @Component({
   selector: 'app-profile',
@@ -14,6 +24,8 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './profil-client.html',
   styleUrls: ['./profil-client.css']
 })
+
+
 export class ProfileComponent implements OnInit {
   activeSection = 'profile';
   unreadNotifications = 3;
@@ -31,43 +43,6 @@ export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
 
 
-
-
-  // Notifications with Font Awesome icons
-  notifications = [
-    {
-      id: 1,
-      title: 'Réservation confirmée',
-      message: 'Votre réservation pour la chambre 302 a été confirmée',
-      time: 'Il y a 2 heures',
-      read: false,
-      icon: 'fas fa-check-circle'
-    },
-    {
-      id: 2,
-      title: 'Promotion spéciale',
-      message: '20% de réduction sur votre prochaine réservation',
-      time: 'Hier, 14:30',
-      read: true,
-      icon: 'fas fa-tag'
-    },
-    {
-      id: 3,
-      title: 'Mise à jour du profil',
-      message: 'Votre profil a été mis à jour avec succès',
-      time: 'Il y a 3 jours',
-      read: true,
-      icon: 'fas fa-user-check'
-    },
-    {
-      id: 4,
-      title: 'Nouveau service disponible',
-      message: 'Service de spa maintenant disponible',
-      time: 'Il y a 1 semaine',
-      read: false,
-      icon: 'fas fa-spa'
-    }
-  ];
 
   // Settings
   settings = {
@@ -91,8 +66,11 @@ export class ProfileComponent implements OnInit {
 
   originalFormData: any;
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
-
+  reservationMessage: string | null = null;
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router, private reservationService: ReservationService,) {
+    const nav = this.router.getCurrentNavigation();
+    this.reservationMessage =
+      nav?.extras?.state?.['reservationMessage'] || null;
   }
 
   ngOnInit(): void {
@@ -107,6 +85,7 @@ export class ProfileComponent implements OnInit {
     });
 
     this.loadClientProfile();
+    this.loadClientReservations();
   }
 
   loadClientProfile() {
@@ -285,6 +264,37 @@ export class ProfileComponent implements OnInit {
 
     const years = Math.floor(diffDays / 365);
     return `il y a ${years} an${years > 1 ? 's' : ''}`;
+  }
+
+
+  clientReservations: any[] = [];
+  notifications: any[] = [];
+
+  loadClientReservations() {
+    this.reservationService.getClientReservations().subscribe({
+      next: (res: any) => {
+        this.clientReservations = res.reservations || [];
+
+        this.clientReservations.forEach(r => {
+          const exists = this.notifications.find(n => n.id === r.idReservation);
+          if (!exists) {
+            this.notifications.unshift({
+              id: r.idReservation,
+              title: `Reservation Room ${r.chambre?.numero || r.chambre_id}`,
+              message: `Your Resevertion is : ${r.statut}`,
+              time: new Date(r.dateDebut).toLocaleDateString('fr-FR'),
+              read: r.statut !== 'pending',
+              icon: 'fas fa-bed'
+            });
+          }
+        });
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  goToPayment() {
+    this.router.navigate(['/profil/payment']);
   }
 
 }

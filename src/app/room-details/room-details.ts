@@ -26,7 +26,7 @@ export class RoomDetails {
     { name: 'Home',  route: '/', active: false },
     { name: 'About', route: '/about', active: false },
     { name: 'Contact', route: '/contact', active: false },
-    { name: 'Profile', route: '/profil', active: false }
+    { name: 'Profile', route: '/room/:id/profil', active: false }
   ];
 
   constructor(
@@ -132,7 +132,19 @@ export class RoomDetails {
         this.reservationService.createReservation(reservationPayload).subscribe({
           next: (res) => {
             this.closeModal();
-            this.router.navigate(['/waiting-reservation', res.idReservation]); // redirect
+            setTimeout(() => {
+              this.router.navigate(
+                ['/room', this.room.id, 'profil'],
+                {
+                  state: {
+                    reservationMessage: 'You will receive a confirmation or a rejection.\n' +
+                      'Please check the Notifications section to stay informed about the status of your reservation.'
+                  }
+                }
+              );
+
+            }, 2000);
+
           }
         });
       },

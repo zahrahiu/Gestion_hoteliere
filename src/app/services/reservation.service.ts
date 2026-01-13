@@ -45,10 +45,12 @@ export class ReservationService {
     return this.http.put(`${this.apiUrl}/${id}`, { statut: status }, { headers });
   }
 
-  getReservationById(id: number): Observable<any> {
+  getClientReservations(): Observable<any> {
     const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get(`${this.apiUrl}/${id}`, { headers });
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+    return this.http.get(`${this.apiUrl}/client`, { headers });
   }
 
 
