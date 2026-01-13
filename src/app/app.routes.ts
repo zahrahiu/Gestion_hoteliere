@@ -75,7 +75,7 @@ export const routes: Routes = [
             .then(m => m.RolesComponent)
       },
       {
-<<<<<<< HEAD
+
   path: 'profile',
   loadComponent: () =>
     import('./admin/admin-profile/admin-profile')
@@ -87,16 +87,16 @@ export const routes: Routes = [
   loadComponent: () =>
     import('./admin/room-stats/room-stats')
       .then(m => m.RoomStats)
-}
+},
 
 
-=======
+      {
         path: 'profile',
         loadComponent: () =>
           import('./admin/admin-profile/admin-profile')
             .then(m => m.AdminProfileComponent)
       }
->>>>>>> 7953c0e149b2d815a1ffbf7c2fd1d4a7b8d37f01
+
     ]
   },
 
