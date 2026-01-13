@@ -72,6 +72,7 @@ export class RoomService {
   }
 
 
+
   toggleRoomState(roomId: number): Observable<any> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
@@ -84,5 +85,10 @@ export class RoomService {
       { headers }
     );
   }
+
+
+getRoomStats(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/stats`, this.getHeaders());
+}
 
 }

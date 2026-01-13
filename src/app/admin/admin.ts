@@ -104,12 +104,12 @@ export class Admin implements OnInit, OnDestroy {
       badge: 3,
       tooltip: 'Gestion des réservations'
     },
-    { 
-      path: '/admin/rooms', 
-      icon: 'king_bed', 
-      label: 'Chambres',
-      tooltip: 'Gestion des chambres'
+    {
+      label: 'Statistiques Chambres',
+      icon: 'bar_chart',
+      path: '/admin/room-stats'
     },
+
     { 
       path: '/admin/logs', 
       icon: 'history', 

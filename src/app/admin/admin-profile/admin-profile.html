@@ -1,290 +1,92 @@
-<!-- admin-profile.html -->
-<div class="profile-page">
-  <!-- Navigation latérale -->
-  <div class="profile-sidebar">
-    <div class="sidebar-header">
-      <div class="avatar-container">
-        <div class="avatar-circle">
-          <mat-icon>account_circle</mat-icon>
+<!-- ===== PROFILE PAGE ===== -->
+<div class="profile-container">
+
+  <div class="content-section profile-edit">
+
+
+    <form [formGroup]="profileForm"
+          (ngSubmit)="updateProfile()"
+          class="profile-form">
+
+      <!-- ===== HEADER ===== -->
+      <div class="form-header">
+        <div class="form-avatar-section">
+          <div class="avatar-info">
+            <h3>{{ user.nom }} {{ user.prenom }}</h3>
+            <p>{{ profileForm.get('email')?.value }}</p>
+          </div>
         </div>
       </div>
-      <div class="user-info">
-        <h2 class="username">Olivia Rhye</h2>
-        <p class="user-role">Administrateur Principal</p>
-        <p class="user-email">admin@example.com</p>
-      </div>
-    </div>
 
-    <mat-nav-list class="sidebar-menu">
-      <a mat-list-item class="menu-item active" routerLink="/admin/profile">
-        <mat-icon>person</mat-icon>
-        <span>Profile</span>
-      </a>
-      <a mat-list-item class="menu-item" routerLink="/admin/dashboard">
-        <mat-icon>dashboard</mat-icon>
-        <span>Dashboard</span>
-      </a>
-      <a mat-list-item class="menu-item" routerLink="/admin/projects">
-        <mat-icon>folder</mat-icon>
-        <span>Projects</span>
-      </a>
-      <a mat-list-item class="menu-item" routerLink="/admin/tasks">
-        <mat-icon>checklist</mat-icon>
-        <span>Tasks</span>
-      </a>
-      <a mat-list-item class="menu-item" routerLink="/admin/reporting">
-        <mat-icon>analytics</mat-icon>
-        <span>Reporting</span>
-      </a>
-      <mat-divider></mat-divider>
-      <a mat-list-item class="menu-item" routerLink="/admin/settings">
-        <mat-icon>settings</mat-icon>
-        <span>Settings</span>
-      </a>
-      <a mat-list-item class="menu-item logout" (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Logout</span>
-      </a>
-    </mat-nav-list>
-  </div>
+      <!-- ===== FORM CONTENT ===== -->
+      <div class="form-content">
 
-  <!-- Contenu principal -->
-  <div class="profile-content">
-    <!-- Header avec recherche -->
-    <div class="content-header">
-      <div class="header-left">
-        <h1>Profile</h1>
-        <p class="subtitle">Manage your personal information and preferences</p>
-      </div>
-      <div class="header-right">
-        <div class="search-container">
-          <mat-icon>search</mat-icon>
-          <input type="text" placeholder="Search..." class="search-input">
+        <!-- Informations personnelles -->
+        <div class="form-section">
+          <h3><i class="fas fa-id-card"></i> Informations Personnelles</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nom">Nom</label>
+              <input id="nom"
+                     type="text"
+                     formControlName="nom"
+                     readonly>
+            </div>
+
+            <div class="form-group">
+              <label for="prenom">Prénom</label>
+              <input id="prenom"
+                     type="text"
+                     formControlName="prenom"
+                     readonly>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input id="email"
+                     type="email"
+                     formControlName="email"
+                     readonly>
+            </div>
+
+            <div class="form-group">
+              <label for="tel">Téléphone</label>
+              <input id="tel"
+                     type="tel"
+                     formControlName="tel">
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Section principale du profil -->
-    <div class="profile-main-content">
-      <!-- Carte de profil à gauche -->
-      <div class="profile-card-container">
-        <mat-card class="profile-card">
-          <div class="profile-header">
-            <div class="profile-avatar-large">
-              <mat-icon>account_circle</mat-icon>
+        <!-- Informations additionnelles -->
+        <div class="form-section">
+          <h3><i class="fas fa-info-circle"></i> Informations Additionnelles</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="dateNaissance">Date de naissance</label>
+              <input id="dateNaissance"
+                     type="date"
+                     formControlName="dateNaissance">
             </div>
-            <div class="profile-title">
-              <h2>Olivia Rhye</h2>
-              <p class="profile-subtitle">Product Designer</p>
-              <p class="profile-location">
-                <mat-icon>location_on</mat-icon>
-                Melbourne, Australia
-              </p>
-            </div>
-          </div>
 
-          <mat-divider></mat-divider>
-
-          <div class="profile-bio">
-            <h3>About me</h3>
-            <p class="bio-text">
-              I'm a Product Designer based in Melbourne, Australia. I specialise in UX/UI design, brand strategy, and Webflow development. I'm always striving to grow and learn something new and I don't take myself too seriously.
-            </p>
-            <p class="bio-text">
-              I'm passionate about helping startups grow, improve their customer experience, and to raise venture capital through good design.
-            </p>
-          </div>
-
-          <div class="profile-skills">
-            <h3>Specialisation</h3>
-            <div class="skills-tags">
-              <span class="skill-tag">UX/UI Design</span>
-              <span class="skill-tag">Brand Strategy</span>
-              <span class="skill-tag">Webflow Development</span>
-              <span class="skill-tag">Product Design</span>
+            <div class="form-group">
+              <label for="cne">CNE</label>
+              <input id="cne"
+                     type="text"
+                     formControlName="cne">
             </div>
           </div>
+        </div>
 
-          <div class="profile-stats">
-            <div class="stat-item">
-              <span class="stat-number">47</span>
-              <span class="stat-label">Projects</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number">128</span>
-              <span class="stat-label">Tasks</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number">89%</span>
-              <span class="stat-label">Completion</span>
-            </div>
-          </div>
-        </mat-card>
-
-        <!-- Carte d'expérience -->
-        <mat-card class="experience-card">
-          <div class="card-header">
-            <h3><mat-icon>work</mat-icon> Experience</h3>
-          </div>
+        <!-- Actions -->
+        <div class="form-actions">
           
-          <div class="experience-item">
-            <div class="experience-header">
-              <h4>Lead Product Designer</h4>
-              <span class="experience-date">May 2020 – Present</span>
-            </div>
-            <p class="company-name">Layers</p>
-            <p class="experience-description">Leading design team and product strategy</p>
-            <button mat-stroked-button class="view-project-btn">
-              <mat-icon>visibility</mat-icon>
-              View project
-            </button>
-          </div>
-        </mat-card>
+        </div>
+
       </div>
-
-      <!-- Formulaire d'édition à droite -->
-      <div class="edit-form-container">
-        <mat-card class="edit-form-card">
-          <div class="card-header">
-            <h2><mat-icon>edit</mat-icon> Edit Profile</h2>
-            <p class="section-description">Update your personal information</p>
-          </div>
-
-          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-            <div class="form-section">
-              <h3>Personal Information</h3>
-              
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>First Name</mat-label>
-                  <input matInput formControlName="firstName">
-                  <mat-error *ngIf="profileForm.get('firstName')?.hasError('required')">
-                    First name is required
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Last Name</mat-label>
-                  <input matInput formControlName="lastName">
-                  <mat-error *ngIf="profileForm.get('lastName')?.hasError('required')">
-                    Last name is required
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Email</mat-label>
-                  <input matInput formControlName="email" type="email">
-                  <mat-icon matSuffix>email</mat-icon>
-                  <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
-                    Email is required
-                  </mat-error>
-                  <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
-                    Invalid email format
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Phone</mat-label>
-                  <input matInput formControlName="phone">
-                  <mat-icon matSuffix>phone</mat-icon>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field full-width">
-                  <mat-label>Location</mat-label>
-                  <input matInput formControlName="location">
-                  <mat-icon matSuffix>location_on</mat-icon>
-                </mat-form-field>
-              </div>
-            </div>
-
-            <mat-divider></mat-divider>
-
-            <div class="form-section">
-              <h3>Bio & Description</h3>
-              
-              <mat-form-field appearance="outline" class="form-field full-width">
-                <mat-label>Bio</mat-label>
-                <textarea matInput formControlName="bio" rows="4"></textarea>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="form-field full-width">
-                <mat-label>Specialisation</mat-label>
-                <input matInput formControlName="specialisation">
-              </mat-form-field>
-            </div>
-
-            <mat-divider></mat-divider>
-
-            <div class="form-section">
-              <h3>Social Links</h3>
-              
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Portfolio</mat-label>
-                  <input matInput formControlName="portfolio">
-                  <mat-icon matSuffix>link</mat-icon>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Twitter</mat-label>
-                  <input matInput formControlName="twitter">
-                  <mat-icon matSuffix>alternate_email</mat-icon>
-                </mat-form-field>
-              </div>
-            </div>
-
-            <mat-divider></mat-divider>
-
-            <div class="form-section">
-              <h3>Security</h3>
-              <p class="section-description">Update your password</p>
-              
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Current Password</mat-label>
-                  <input matInput [type]="showCurrentPassword ? 'text' : 'password'" formControlName="currentPassword">
-                  <button type="button" mat-icon-button matSuffix (click)="togglePasswordVisibility('current')">
-                    <mat-icon>{{showCurrentPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                  </button>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>New Password</mat-label>
-                  <input matInput [type]="showNewPassword ? 'text' : 'password'" formControlName="newPassword">
-                  <button type="button" mat-icon-button matSuffix (click)="togglePasswordVisibility('new')">
-                    <mat-icon>{{showNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                  </button>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="form-field">
-                  <mat-label>Confirm Password</mat-label>
-                  <input matInput [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword">
-                  <button type="button" mat-icon-button matSuffix (click)="togglePasswordVisibility('confirm')">
-                    <mat-icon>{{showConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                  </button>
-                </mat-form-field>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button mat-stroked-button type="button" (click)="resetForm()" class="cancel-btn">
-                Cancel
-              </button>
-              <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid || saving">
-                <mat-icon *ngIf="!saving">save</mat-icon>
-                <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
-                {{saving ? 'Saving...' : 'Save Changes'}}
-              </button>
-            </div>
-          </form>
-        </mat-card>
-      </div>
-    </div>
+    </form>
   </div>
+
 </div>
