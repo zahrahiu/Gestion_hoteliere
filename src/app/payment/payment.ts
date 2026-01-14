@@ -7,14 +7,12 @@ import { ReservationService } from '../services/reservation.service';
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [CommonModule, RouterModule, NgIf, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './payment.html',
   styleUrls: ['./payment.css']
 })
 export class Payment {
 
-  clientReservations: any[] = [];
-  notifications: any[] = [];
 
   navItems = [
     { name: 'Home',  route: '/', active: false },
@@ -23,8 +21,10 @@ export class Payment {
     { name: 'Profile', route: '/room/:id/profil', active: false }
   ];
 
+  clientReservations: any[] = [];
+
   constructor(private reservationService: ReservationService) {
-    // Hna katfetch reservations men backend b token
+
     this.reservationService.getClientReservations().subscribe({
       next: (res: any) => {
         this.clientReservations = Array.isArray(res) ? res : res.reservations || [];

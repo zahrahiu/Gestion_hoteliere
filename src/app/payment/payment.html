@@ -28,7 +28,7 @@
 </nav>
 
 <div>
-  <h2>Payment Here ...</h2>
+  <h2>Payment Here ... Please Wait </h2>
 </div>
 <div class="reservations-container">
 
@@ -47,19 +47,15 @@
     <tbody>
     <tr *ngFor="let res of clientReservations">
       <td>{{ res.chambre?.numero || res.chambre_id }}</td>
-      <td>{{ res.chambre?.type}}</td>
+      <td>{{ res.chambre?.type || res.chambre_id }}</td>
       <td>{{ res.dateDebut | date:'dd/MM/yyyy' }}</td>
       <td>{{ res.dateFin | date:'dd/MM/yyyy' }}</td>
       <td>
-          <span [ngClass]="{
-            'status-confirmed': res.statut === 'confirmed',
-            'status-pending': res.statut === 'pending',
-            'status-rejected': res.statut === 'rejected'
-          }">{{ res.statut }}</span>
+        {{ res.statut }}
       </td>
       <td>{{ res.totalPrix | number:'1.2-2' }} MAD</td>
       <td>
-        <button *ngIf="res.statut === 'confirmed'" class="btn-pay">Payer</button>
+        <button class="btn-pay">Payer</button>
       </td>
     </tr>
     </tbody>

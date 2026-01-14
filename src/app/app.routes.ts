@@ -8,7 +8,6 @@ import { ProfileComponent } from './components/client/profil-client/profil-clien
 import { ProfilManager } from './components/manager/profil-manager/profil-manager';
 import { RoomDetails } from './room-details/room-details';
 import { AdminGuard } from './guards/admin.guard';
-import {WaitingReservation} from './waiting-reservation/waiting-reservation';
 import {Payment} from './payment/payment';
 
 export const routes: Routes = [
@@ -19,7 +18,6 @@ export const routes: Routes = [
   { path: 'catalogue/profil', component: ProfileComponent },
   { path: 'room/:id/profil', component: ProfileComponent },
   { path: 'room/:id', component: RoomDetails },
-  { path: 'waiting-reservation/:id', component: WaitingReservation },
   { path: 'profil/payment', component: Payment },
 
   // Manager

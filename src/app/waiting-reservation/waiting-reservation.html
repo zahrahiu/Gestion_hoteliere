@@ -1,9 +1,0 @@
-<div *ngIf="!reservation">
-  Loading reservation...
-</div>
-<div *ngIf="reservation">
-  <h2>Reservation Status</h2>
-  <p *ngIf="reservation.statut === 'pending'">⏳ Pending...</p>
-  <p *ngIf="reservation.statut === 'confirmed'">✅ Confirmed!</p>
-  <p *ngIf="reservation.statut === 'rejected'">❌ Rejected!</p>
-</div>

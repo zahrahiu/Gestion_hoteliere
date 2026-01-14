@@ -293,19 +293,24 @@
           <thead>
           <tr>
             <th>#</th>
+            <th>Picture</th>
             <th>Numéro</th>
             <th>Type</th>
+            <th>Description</th>
             <th>Prix</th>
             <th>Status</th>
-            <th>Date de réservation</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let room of rooms; let i = index">
             <td>{{ i + 1 }}</td>
+            <td>
+              <img [src]="'http://localhost:8093/uploads/' + room.image" alt="Room image" />
+            </td>
             <td>{{ room.numero }}</td>
             <td>{{ room.type }}</td>
-            <td>{{ room.prix }} MAD</td>
+            <td>{{ room.description }}</td>
+            <td>{{ room.prix }} MAD/NIGHT</td>
             <td>
              <span class="status" [ngClass]="{
             'available': room.etat === 'Disponible',
@@ -315,13 +320,25 @@
             {{ room.etat }}
           </span>
             </td>
-            <td>
-              2026-01-09
-            </td>
           </tr>
           </tbody>
         </table>
       </div>
+      <!-- Rooms Analytics -->
+      <div class="rooms-analytics">
+
+        <div class="chart-card">
+          <h3>Rooms by Status</h3>
+          <canvas id="statusChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Price by Room Type</h3>
+          <canvas id="priceChart"></canvas>
+        </div>
+
+      </div>
+
     </div>
 
 
@@ -374,13 +391,13 @@
           <td class="actions-cell">
             <button class="btn-confirm"
                     *ngIf="res.statut === 'pending'"
-                    (click)="confirmReservation(res, 'confirmed')">
+                    (click)="confirmReservation(res)">
               Confirmer
             </button>
 
             <button class="btn-reject"
                     *ngIf="res.statut === 'pending'"
-                    (click)="rejectReservation(res, 'rejected')">
+                    (click)="rejectReservation(res)">
               Rejeter
             </button>
 

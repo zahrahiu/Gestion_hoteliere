@@ -73,21 +73,20 @@ export class RoomService {
 
 
 
-  toggleRoomState(roomId: number): Observable<any> {
+  toggleRoomState(roomId: number, etat: string): Observable<any> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`
     });
 
     return this.http.patch(
-      `http://localhost:8093/rooms/${roomId}/etat`,
+      `http://localhost:8093/rooms/${roomId}/etat/${etat}`,
       {},
       { headers }
     );
   }
 
-
-getRoomStats(): Observable<any> {
+  getRoomStats(): Observable<any> {
   return this.http.get(`${this.apiUrl}/stats`, this.getHeaders());
 }
 
