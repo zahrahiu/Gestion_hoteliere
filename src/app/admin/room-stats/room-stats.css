@@ -277,3 +277,127 @@
   font-size: 12px;
   font-weight: bold;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== CONTAINER ===== */
+.room-stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+  background: #f9fafb;
+}
+
+/* ===== STAT CARDS ===== */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  padding: 18px;
+  border-radius: 16px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #6b7280;
+}
+
+.stat-card .value {
+  font-size: 30px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ===== COULEURS DOUCES ===== */
+.beige {
+  background: #fef3c7;
+}
+
+.maron {
+  background: #fde68a;
+}
+
+.noir {
+  background: #e5e7eb;
+}
+
+/* ===== CHARTS ===== */
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 24px;
+}
+
+.chart-card {
+  padding: 20px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.chart-card h4 {
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* ===== CANVAS ===== */
+canvas {
+  max-height: 280px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card .value {
+    font-size: 24px;
+  }
+}

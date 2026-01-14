@@ -1,3 +1,4 @@
+<!-- src/app/admin/admin.component.html -->
 <mat-sidenav-container class="admin-container" fullscreen>
   <!-- Sidebar -->
   <mat-sidenav 
@@ -10,7 +11,7 @@
       <div class="logo-container">
         <mat-icon class="logo-icon">hotel</mat-icon>
       </div>
-      <h3> ROYELLAS Hôtel </h3>
+      <h3>ROYELLAS Hôtel</h3>
       <p class="sidenav-subtitle">Administration</p>
     </div>
 
@@ -63,11 +64,11 @@
       <!-- Notifications -->
       <button mat-icon-button [matMenuTriggerFor]="notificationsMenu" class="notif-btn">
         <mat-icon 
-  [matBadge]="getUnreadNotificationsCount()" 
-  matBadgeColor="warn" 
-  matBadgeSize="small">
-  notifications
-</mat-icon>
+          [matBadge]="getUnreadNotificationsCount()" 
+          matBadgeColor="warn" 
+          matBadgeSize="small">
+          notifications
+        </mat-icon>
       </button>
       
       <!-- User Menu -->
@@ -147,11 +148,28 @@
       </mat-card>
     </div>
 
-    <!-- Loading -->
+    <!-- Chart Section -->
+    <div class="chart-section" *ngIf="currentRoute === '/admin'">
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Utilisateurs par rôle</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <canvas 
+            baseChart
+            [data]="roleChartData"
+            [options]="chartOptions"
+            [type]="'doughnut'">
+          </canvas>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Loading 
     <div class="loading-container" *ngIf="loading">
       <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
       <p class="loading-text">Chargement des données...</p>
-    </div>
+    </div>-->
 
     <!-- Router Outlet -->
     <div class="content-wrapper">

@@ -13,12 +13,43 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar'; // Ajouté
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { HttpClientModule } from '@angular/common/http';
+import { NgChartsModule } from 'ng2-charts';
+import { ChartOptions, ChartData, ChartType } from 'chart.js';
+import { filter, Subscription } from 'rxjs';
+
 import { AuthService } from '../services/auth.service';
 import { UserProfileService } from '../services/user-profile.service';
 import { UserService } from '../services/user.service';
-import { filter, Subscription, interval } from 'rxjs';
-import { HttpClientModule } from '@angular/common/http';
+
+interface RoleStat {
+  role: string;
+  count: number;
+  active: number;
+  inactive: number;
+  percentage: number;
+}
+
+interface MenuItem {
+  path: string;
+  icon: string;
+  label: string;
+  exact?: boolean;
+  badge?: number;
+  tooltip?: string;
+}
+
+interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  icon: string;
+  color: 'primary' | 'accent' | 'warn';
+  read: boolean;
+  type: string;
+}
 
 @Component({
   selector: 'app-admin',
@@ -38,8 +69,9 @@ import { HttpClientModule } from '@angular/common/http';
     MatCardModule,
     MatDividerModule,
     MatTooltipModule,
-    HttpClientModule, 
-    MatSnackBarModule // Ajouté
+    HttpClientModule,
+    MatSnackBarModule,
+    NgChartsModule
   ],
   templateUrl: './admin.html',
   styleUrls: ['./admin.css']
@@ -48,8 +80,7 @@ export class Admin implements OnInit, OnDestroy {
   sidenavOpened = true;
   currentRoute = '';
   isMobile = false;
-  
-  // Statistiques améliorées
+
   stats = {
     totalUsers: 0,
     pendingProfiles: 0,
@@ -60,68 +91,38 @@ export class Admin implements OnInit, OnDestroy {
     revenueToday: 0,
     satisfactionRate: 4.8
   };
-  
+
   user: any;
   loading = false;
-  notifications: any[] = [];
+  notifications: Notification[] = [];
   lastUpdate = new Date();
-  
   private subscriptions = new Subscription();
 
-  // Menu items amélioré avec tooltips
-  menuItems = [
-    { 
-      path: '/admin', 
-      icon: 'dashboard', 
-      label: 'Tableau de bord',
-      exact: true,
-      tooltip: 'Vue d\'ensemble des statistiques'
-    },
-    { 
-      path: '/admin/users', 
-      icon: 'people', 
-      label: 'Utilisateurs',
-      badge: 0,
-      tooltip: 'Gestion des utilisateurs'
-    },
-    { 
-      path: '/admin/roles', 
-      icon: 'admin_panel_settings', 
-      label: 'Rôles & Permissions',
-      tooltip: 'Gestion des autorisations'
-    },
-    { 
-      path: '/admin/profiles', 
-      icon: 'assignment_ind', 
-      label: 'Profils Internes',
-      badge: 0,
-      tooltip: 'Validation des profils'
-    },
-    { 
-      path: '/admin/bookings', 
-      icon: 'event_available', 
-      label: 'Réservations',
-      badge: 3,
-      tooltip: 'Gestion des réservations'
-    },
-    {
-      label: 'Statistiques Chambres',
-      icon: 'bar_chart',
-      path: '/admin/room-stats'
-    },
-
-    { 
-      path: '/admin/logs', 
-      icon: 'history', 
-      label: 'Journal d\'activité',
-      tooltip: 'Historique des actions'
-    },
-    { 
-      path: '/admin/settings', 
-      icon: 'settings', 
-      label: 'Paramètres',
-      tooltip: 'Configuration du système'
+  // Graphiques des rôles
+  roleStats: RoleStat[] = [];
+  roleChartLabels: string[] = [];
+  roleChartData: ChartData<'doughnut'> = {
+    labels: [],
+    datasets: []
+  };
+  
+  chartOptions: ChartOptions<'doughnut'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+      }
     }
+  };
+
+  menuItems: MenuItem[] = [
+    { path: '/admin', icon: 'dashboard', label: 'Tableau de bord', exact: true, tooltip: 'Vue d\'ensemble des statistiques' },
+    { path: '/admin/users', icon: 'people', label: 'Utilisateurs', badge: 0, tooltip: 'Gestion des utilisateurs' },
+    { path: '/admin/roles', icon: 'admin_panel_settings', label: 'Rôles & Permissions', tooltip: 'Gestion des autorisations' },
+    { path: '/admin/reservation', icon: 'event_available', label: 'Réservations', badge: 3, tooltip: 'Gestion des réservations' },
+    { path: '/admin/room-stats', icon: 'bar_chart', label: 'Statistiques Chambres' },
+    { path: '/admin/logs', icon: 'history', label: 'Journal d\'activité', tooltip: 'Historique des actions' },
+    { path: '/admin/settings', icon: 'settings', label: 'Paramètres', tooltip: 'Configuration du système' }
   ];
 
   constructor(
@@ -129,10 +130,10 @@ export class Admin implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private profileService: UserProfileService,
-    private snackBar: MatSnackBar // Ajouté
+    private snackBar: MatSnackBar
   ) {
     this.checkMobile();
-    
+
     const routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
@@ -151,8 +152,7 @@ export class Admin implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadUserData();
     this.loadStats();
-    this.testStorage(); 
-    this.setupAutoRefresh();
+    this.setupRoleStats();
     this.loadNotifications();
   }
 
@@ -172,310 +172,100 @@ export class Admin implements OnInit, OnDestroy {
 
   loadUserData(): void {
     this.user = this.authService.getCurrentUser();
-    if (!this.user) {
-      this.router.navigate(['/login']);
-    }
+    if (!this.user) this.router.navigate(['/login']);
   }
 
-  // Dans la méthode loadStats() :
-loadStats(): void {
-  this.loading = true;
-  
-  const userSub = this.userService.getAllUsers().subscribe({
-    next: (users: any[]) => {
+  loadStats(): void {
+    this.loading = true;
+    this.userService.getAllUsers().subscribe(users => {
       this.stats.totalUsers = users.length;
       this.stats.activeUsers = users.filter(u => u.active).length;
       this.menuItems[1].badge = users.length;
-      
-      // Simuler d'autres données pour l'hôtel
-      this.stats.todayBookings = Math.floor(Math.random() * 20) + 10;
-      this.stats.occupancyRate = Math.floor(Math.random() * 30) + 70;
-      this.stats.revenueToday = Math.floor(Math.random() * 5000) + 10000;
-      
-      this.loading = false; // IMPORTANT: Désactiver le loading
-    },
-    error: (error: any) => {
-      console.error('Erreur chargement utilisateurs:', error);
-      this.loading = false; // IMPORTANT: Désactiver même en cas d'erreur
-    }
-  });
-
-const profileSub = this.profileService.getAllProfiles().subscribe({
-    next: (profiles: any[]) => {
-      const pending = profiles.filter(p => p.status === 'PENDING').length;
-      this.stats.pendingProfiles = pending;
-      this.menuItems[3].badge = pending;
-      this.updateNotifications();
-    },
-    error: (error: any) => {
-      console.error('Erreur chargement profils:', error);
-    }
-  });
-
-  this.subscriptions.add(userSub);
-  this.subscriptions.add(profileSub);
-}
+      this.loading = false;
+    });
+  }
 
   loadNotifications(): void {
     this.notifications = [
-      {
-        id: 1,
-        title: 'Nouvelle réservation',
-        message: 'Chambre 301 réservée pour 2 nuits',
-        time: '10 min',
-        icon: 'event_available',
-        color: 'primary',
-        read: false,
-        type: 'booking'
-      },
-      {
-        id: 2,
-        title: 'Check-in requis',
-        message: 'M. Dupont arrive à 14h00',
-        time: '25 min',
-        icon: 'login',
-        color: 'accent',
-        read: false,
-        type: 'checkin'
-      },
-      {
-        id: 3,
-        title: 'Maintenance',
-        message: 'Chambre 205 en maintenance',
-        time: '1h',
-        icon: 'build',
-        color: 'warn',
-        read: true,
-        type: 'maintenance'
-      }
+      { id: 1, title: 'Nouvelle réservation', message: 'Chambre 301 réservée', time: '10 min', icon: 'event_available', color: 'primary', read: false, type: 'booking' },
+      { id: 2, title: 'Check-in requis', message: 'M. Dupont arrive à 14h00', time: '25 min', icon: 'login', color: 'accent', read: false, type: 'checkin' },
     ];
   }
 
-  updateNotifications(): void {
-    if (this.stats.pendingProfiles > 0) {
-      // Vérifier si la notification existe déjà
-      const existingNotification = this.notifications.find(n => 
-        n.type === 'pending_profiles'
-      );
-      
-      if (!existingNotification) {
-        this.notifications.unshift({
-          id: Date.now(),
-          title: 'Profils en attente',
-          message: `${this.stats.pendingProfiles} profil(s) nécessitent validation`,
-          time: 'Maintenant',
-          icon: 'assignment_ind',
-          color: 'warn',
-          read: false,
-          type: 'pending_profiles'
-        });
-      } else {
-        // Mettre à jour le message existant
-        existingNotification.message = `${this.stats.pendingProfiles} profil(s) nécessitent validation`;
-      }
-    } else {
-      // Supprimer la notification si plus de profils en attente
-      this.notifications = this.notifications.filter(n => 
-        n.type !== 'pending_profiles'
-      );
-    }
-  }
+  setupRoleStats(): void {
+    // Exemples simulés
+    const rawStats = [
+      { role: 'Admin', count: 5, active: 5, inactive: 0 },
+      { role: 'MANAGER', count: 12, active: 10, inactive: 2 },
+      { role: 'HOUSEKEEPING', count: 20, active: 18, inactive: 2 },
+      { role: 'RECEPTIONNISTE', count: 2, active: 2, inactive: 0 },
+      { role: 'MAINTENANCE', count: 3, active: 3, inactive: 0 }
+    ];
 
-  setupAutoRefresh(): void {
-    // Actualiser les stats toutes les 5 minutes
-    const refreshSub = interval(300000).subscribe(() => {
-      this.loadStats();
-      this.lastUpdate = new Date();
-      this.showSnackbar('Données actualisées', 'OK');
-    });
-    this.subscriptions.add(refreshSub);
-  }
+    const total = rawStats.reduce((sum, r) => sum + r.count, 0);
+    this.roleStats = rawStats.map(r => ({
+      ...r,
+      percentage: total ? (r.count / total) * 100 : 0
+    }));
 
-  toggleSidenav(): void {
-    this.sidenavOpened = !this.sidenavOpened;
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  navigateToProfile(): void {
-  this.router.navigate(['/admin/profile']);  // ✅ Bonne route
-}
-  getPageTitle(): string {
-    const titles: {[key: string]: string} = {
-      '/admin': 'Tableau de bord',
-      '/admin/users': 'Gestion des utilisateurs',
-      '/admin/roles': 'Rôles & Permissions',
-      '/admin/profiles': 'Profils internes',
-      '/admin/bookings': 'Gestion des réservations',
-      '/admin/rooms': 'Gestion des chambres',
-      '/admin/logs': 'Journal d\'activité',
-      '/admin/settings': 'Paramètres système'
+    this.roleChartLabels = this.roleStats.map(r => r.role);
+    
+    this.roleChartData = {
+      labels: this.roleChartLabels,
+      datasets: [{
+        data: this.roleStats.map(r => r.count),
+        backgroundColor: this.roleStats.map(r => this.getColorForRole(r.role)),
+        hoverOffset: 4
+      }]
     };
-    
-    return titles[this.currentRoute] || 'Administration Hôtel';
   }
 
-  getLastUpdateTime(): string {
-    return this.lastUpdate.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  getColorForRole(role: string): string {
+    const colors: { [key: string]: string } = {
+      'Admin': '#3f51b5',
+      'MANAGER': '#ff9800',
+      'HOUSEKEEPING': '#4caf50',
+      'RECEPTIONNISTE': '#e91e63',
+      'MAINTENANCE': '#00bcd4'
+    };
+    return colors[role] || '#9e9e9e';
   }
 
-  // NOUVELLE MÉTHODE : Marquer une notification comme lue
-  markNotificationAsRead(notification: any): void {
-    const index = this.notifications.findIndex(n => n.id === notification.id);
-    if (index !== -1 && !this.notifications[index].read) {
-      this.notifications[index].read = true;
-      
-      // Si c'est une notification de profils en attente, mettre à jour le badge
-      if (notification.type === 'pending_profiles') {
-        this.stats.pendingProfiles = 0;
-        this.menuItems[3].badge = 0;
-      }
-      
-      this.showSnackbar('Notification marquée comme lue', 'OK');
-    }
+  toggleSidenav(): void { 
+    this.sidenavOpened = !this.sidenavOpened; 
   }
-
-  // NOUVELLE MÉTHODE : Marquer toutes les notifications comme lues
-  markAllNotificationsAsRead(): void {
-    let hasUnread = false;
-    
-    this.notifications.forEach(notification => {
-      if (!notification.read) {
-        notification.read = true;
-        hasUnread = true;
-      }
-    });
-    
-    // Réinitialiser les notifications de profils en attente
-    if (this.stats.pendingProfiles > 0) {
-      this.stats.pendingProfiles = 0;
-      this.menuItems[3].badge = 0;
-    }
-    
-    if (hasUnread) {
-      this.showSnackbar('Toutes les notifications sont lues', 'OK');
-    }
-  }
-
-  // NOUVELLE MÉTHODE : Naviguer vers une notification
-  navigateToNotification(notification: any): void {
-    this.markNotificationAsRead(notification);
-    
-    switch (notification.type) {
-      case 'booking':
-        this.router.navigate(['/admin/bookings']);
-        break;
-      case 'checkin':
-        this.router.navigate(['/admin/bookings'], { queryParams: { filter: 'today' } });
-        break;
-      case 'pending_profiles':
-        this.router.navigate(['/admin/profile']);
-        break;
-      case 'maintenance':
-        this.router.navigate(['/admin/rooms']);
-        break;
-    }
-  }
-
-  getGreeting(): string {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Bonjour';
-    if (hour < 18) return 'Bon après-midi';
-    return 'Bonsoir';
-  }
-
-  // NOUVELLE MÉTHODE : Afficher un snackbar
-  showSnackbar(message: string, action: string = 'OK'): void {
-    this.snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'right',
-      verticalPosition: 'bottom',
-      panelClass: ['custom-snackbar']
-    });
-  }
-
-  // NOUVELLE MÉTHODE : Obtenir le nombre de notifications non lues
-  getUnreadNotificationsCount(): number {
-    return this.notifications.filter(n => !n.read).length;
-  }
-
-  // NOUVELLE MÉTHODE : Obtenir le texte du taux d'occupation
-  getOccupancyStatus(): string {
-    if (this.stats.occupancyRate > 90) return 'Complet';
-    if (this.stats.occupancyRate > 70) return 'Élevé';
-    if (this.stats.occupancyRate > 50) return 'Moyen';
-    return 'Faible';
-  }
-  get unreadNotificationsCount(): number {
-  return this.notifications.filter(n => !n.read).length;
-}
-// في Admin class، أضف هذه الدالة:
-testStorage(): void {
-  console.log('🧪 [Admin] Testing localStorage...');
   
-  console.log('🔑 Token exists?', localStorage.getItem('token') ? 'YES' : 'NO');
-  console.log('🔑 AccessToken exists?', localStorage.getItem('accessToken') ? 'YES' : 'NO');
-  console.log('👤 User exists?', localStorage.getItem('user') ? 'YES' : 'NO');
+  logout(): void { 
+    this.authService.logout(); 
+    this.router.navigate(['/login']); 
+  }
   
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      const user = JSON.parse(userStr);
-      console.log('📋 User data:', user);
-    } catch (e) {
-      console.error('❌ Error parsing user:', e);
-    }
+  navigateToProfile(): void { 
+    this.router.navigate(['/admin/profile']); 
   }
-}
-
-// استدعها في ngOnInit بعد loadUserData():
-
-
-
-
-
-
-
-// Ajoutez ces méthodes à votre classe Admin
-
-quickAction(action: string): void {
-  switch(action) {
-    case 'newUser':
-      this.router.navigate(['/admin/users/new']);
-      break;
-    case 'newBooking':
-      this.router.navigate(['/admin/bookings/new']);
-      break;
-    case 'reports':
-      this.generateReport();
-      break;
+  
+  getPageTitle(): string { 
+    return 'Tableau de bord'; 
   }
-  this.showSnackbar(`Action: ${action}`, 'OK');
-}
-
-generateReport(): void {
-  this.showSnackbar('Génération du rapport en cours...', 'OK');
-  // Implémentez la logique de génération de rapport ici
-}
-
-refreshDashboard(): void {
-  this.loading = true;
-  this.loadStats();
-  this.loadNotifications();
-  setTimeout(() => {
-    this.loading = false;
-    this.showSnackbar('Tableau de bord actualisé', 'OK');
-  }, 1000);
-}
-
-get currentDate(): Date {
-  return new Date();
-}
-
+  
+  getLastUpdateTime(): string { 
+    return new Date().toLocaleTimeString(); 
+  }
+  
+  getGreeting(): string { 
+    const h = new Date().getHours(); 
+    return h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir'; 
+  }
+  
+  getUnreadNotificationsCount(): number { 
+    return this.notifications.filter(n => !n.read).length; 
+  }
+  
+  markNotificationAsRead(notif: Notification) { 
+    notif.read = true; 
+  }
+  
+  markAllNotificationsAsRead() { 
+    this.notifications.forEach(n => n.read = true); 
+  }
 }

@@ -41,6 +41,14 @@ export interface UpdateUserRequest {
   roles?: string[];
 }
 
+export interface UserStatsByRole {
+  role: string;
+  count: number;
+  percentage: number;
+  active: number;
+  inactive: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -291,5 +299,63 @@ toggleUserStatus(id: number, active: boolean): Observable<UserResponseDTO> {
       status: error.status,
       error: error.error
     }));
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  getUsersByRoleStats(): Observable<UserStatsByRole[]> {
+    console.log('🔄 [UserService] Fetching users stats by role...');
+    
+    return this.getAllUsers().pipe(
+      map(users => {
+        // Calculer les statistiques par rôle
+        const roleStats = new Map<string, { total: number, active: number }>();
+        
+        users.forEach(user => {
+          user.roles.forEach(role => {
+            if (!roleStats.has(role)) {
+              roleStats.set(role, { total: 0, active: 0 });
+            }
+            const stats = roleStats.get(role)!;
+            stats.total++;
+            if (user.active) {
+              stats.active++;
+            }
+          });
+        });
+        
+        // Convertir en tableau
+        const totalUsers = users.length;
+        const statsArray: UserStatsByRole[] = [];
+        
+        roleStats.forEach((value, role) => {
+          statsArray.push({
+            role,
+            count: value.total,
+            percentage: totalUsers > 0 ? (value.total / totalUsers) * 100 : 0,
+            active: value.active,
+            inactive: value.total - value.active
+          });
+        });
+        
+        // Trier par nombre décroissant
+        statsArray.sort((a, b) => b.count - a.count);
+        
+        console.log('📊 User stats by role:', statsArray);
+        return statsArray;
+      })
+    );
   }
 }

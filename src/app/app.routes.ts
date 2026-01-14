@@ -42,61 +42,57 @@ export const routes: Routes = [
   },
 
   // Admin (protected)
-  {
-    path: 'admin',
+  // Admin (protected)
+{
+  path: 'admin',
+  loadComponent: () => import('./admin/admin').then(m => m.Admin),
+  canActivate: [AdminGuard],
+  children: [
+    {
+      path: 'users',
+      loadComponent: () =>
+        import('./admin/user-list/user-list')
+          .then(m => m.UserListComponent)
+    },
+    {
+      path: 'users/edit/:id',
+      loadComponent: () =>
+        import('./admin/edit-user/edit-user')
+          .then(m => m.EditUserComponent)
+    },
+    {
+      path: 'users/add',
+      loadComponent: () =>
+        import('./admin/add-user/add-user')
+          .then(m => m.AddUserComponent)
+    },
+    {
+      path: 'roles',
+      loadComponent: () =>
+        import('./admin/roles/roles')
+          .then(m => m.RolesComponent)
+    },
+    {
+      path: 'profile',
+      loadComponent: () =>
+        import('./admin/admin-profile/admin-profile')
+          .then(m => m.AdminProfileComponent)
+    },
+    {
+      path: 'room-stats',
+      loadComponent: () =>
+        import('./admin/room-stats/room-stats')
+          .then(m => m.RoomStats)
+    },
+    {
+     path: 'reservation',
     loadComponent: () =>
-      import('./admin/admin').then(m => m.Admin),
-    canActivate: [AdminGuard],
-    children: [
-      {
-        path: 'users',
-        loadComponent: () =>
-          import('./admin/user-list/user-list')
-            .then(m => m.UserListComponent)
-      },
-      {
-        path: 'users/edit/:id',
-        loadComponent: () =>
-          import('./admin/edit-user/edit-user')
-            .then(m => m.EditUserComponent)
-      },
-      {
-        path: 'users/add',
-        loadComponent: () =>
-          import('./admin/add-user/add-user')
-            .then(m => m.AddUserComponent)
-      },
-      {
-        path: 'roles',
-        loadComponent: () =>
-          import('./admin/roles/roles')
-            .then(m => m.RolesComponent)
-      },
-      {
-<<<<<<< HEAD
-  path: 'profile',
-  loadComponent: () =>
-    import('./admin/admin-profile/admin-profile')
-      .then(m => m.AdminProfileComponent)
-},
-
- {
-  path: 'room-stats',
-  loadComponent: () =>
-    import('./admin/room-stats/room-stats')
-      .then(m => m.RoomStats)
+     import('./admin/reservation/reservation')
+      .then(m => m.ReservationComponent)
 }
 
-
-=======
-        path: 'profile',
-        loadComponent: () =>
-          import('./admin/admin-profile/admin-profile')
-            .then(m => m.AdminProfileComponent)
-      }
->>>>>>> 7953c0e149b2d815a1ffbf7c2fd1d4a7b8d37f01
-    ]
-  },
+  ]
+},
 
   {
     path: 'unauthorized',
