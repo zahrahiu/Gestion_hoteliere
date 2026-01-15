@@ -64,12 +64,13 @@
     </button>
   </div>
 
+
   <!-- Modal -->
   <div class="modal" *ngIf="showModal">
     <div class="modal-content">
       <span class="close" (click)="closeModal()">&times;</span>
       <h2>Reservation Form</h2>
-      <form (ngSubmit)="submitReservation()" #resForm="ngForm">
+      <form (ngSubmit)="submitReservation($event)" #resForm="ngForm">
 
         <!-- Row 1: First + Last Name -->
         <div class="input-row">
@@ -130,8 +131,8 @@
             <input type="date" id="endDate" name="endDate" [(ngModel)]="reservation.endDate" required>
           </div>
         </div>
-
         <button type="submit" class="submit-btn">Confirm Reservation</button>
+
       </form>
     </div>
   </div>

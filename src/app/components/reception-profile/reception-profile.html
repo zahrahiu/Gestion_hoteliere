@@ -67,6 +67,15 @@
 
 
       <div class="nav-item"
+           [class.active]="activeSection === 'reservations'"
+           (click)="showSection('reservations')">
+        <div class="nav-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <span class="nav-text">Reservations</span>
+      </div>
+
+      <div class="nav-item"
            [class.active]="activeSection === 'settings'"
            (click)="showSection('settings')">
         <div class="nav-icon">
@@ -284,19 +293,24 @@
           <thead>
           <tr>
             <th>#</th>
+            <th>Picture</th>
             <th>Numéro</th>
             <th>Type</th>
+            <th>Description</th>
             <th>Prix</th>
             <th>Status</th>
-            <th>Date de réservation</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let room of rooms; let i = index">
             <td>{{ i + 1 }}</td>
+            <td>
+              <img [src]="'http://localhost:8093/uploads/' + room.image" alt="Room image" />
+            </td>
             <td>{{ room.numero }}</td>
             <td>{{ room.type }}</td>
-            <td>{{ room.prix }} MAD</td>
+            <td>{{ room.description }}</td>
+            <td>{{ room.prix }} MAD/NIGHT</td>
             <td>
              <span class="status" [ngClass]="{
             'available': room.etat === 'Disponible',
@@ -306,14 +320,101 @@
             {{ room.etat }}
           </span>
             </td>
-            <td>
-              2026-01-09
-            </td>
           </tr>
           </tbody>
         </table>
       </div>
+      <!-- Rooms Analytics -->
+      <div class="rooms-analytics">
+
+        <div class="chart-card">
+          <h3>Rooms by Status</h3>
+          <canvas id="statusChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Price by Room Type</h3>
+          <canvas id="priceChart"></canvas>
+        </div>
+
+      </div>
+
     </div>
+
+
+    <div class="reservations-section" *ngIf="activeSection === 'reservations'">
+      <div class="page-header">
+        <h1>
+          <i class="fas fa-calendar-check"></i> ALL Reservations
+        </h1>
+      </div>
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name Client</th>
+          <th>Email Client</th>
+          <th>CNI</th>
+          <th>Room Number</th>
+          <th>Type Room</th>
+          <th>Date Début</th>
+          <th>Date Fin</th>
+          <th>Statut</th>
+          <th>Total Prix</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let res of reservations">
+          <td>{{ res.idReservation }}</td>
+
+          <!-- Client info -->
+          <td>{{ res.client?.nom || res.client_id }} {{ res.client?.prenom || '' }}</td>
+          <td>{{ res.client?.email || 'N/A' }}</td>
+          <td>{{ res.client?.cni }}</td>
+
+          <!-- Room info -->
+          <td>{{ res.chambre?.numero || res.chambre_id }}</td>
+          <td>{{ res.chambre?.type || res.typeChambre }}</td>
+
+          <td>{{ res.dateDebut | date:'dd/MM/yyyy' }}</td>
+          <td>{{ res.dateFin | date:'dd/MM/yyyy' }}</td>
+
+          <td [ngClass]="{
+            'pending': res.statut === 'pending',
+            'confirmed': res.statut === 'confirmed',
+            'rejected': res.statut === 'rejected'
+          }">{{ res.statut }}</td>
+
+          <td>{{ res.totalPrix | number:'1.2-2' }} MAD</td>
+
+          <td class="actions-cell">
+            <button class="btn-confirm"
+                    *ngIf="res.statut === 'pending'"
+                    (click)="confirmReservation(res)">
+              Confirmer
+            </button>
+
+            <button class="btn-reject"
+                    *ngIf="res.statut === 'pending'"
+                    (click)="rejectReservation(res)">
+              Rejeter
+            </button>
+
+              <span *ngIf="res.statut === 'confirmed'" class="status-confirmed">
+                ✔ Confirmed
+              </span>
+
+              <span *ngIf="res.statut === 'rejected'" class="status-rejected">
+                ✖ Rejected
+              </span>
+          </td>
+
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
 
     <!-- Settings Section -->
     <div class="content-section" *ngIf="activeSection === 'settings'">

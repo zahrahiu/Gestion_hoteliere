@@ -8,6 +8,7 @@ import { ProfileComponent } from './components/client/profil-client/profil-clien
 import { ProfilManager } from './components/manager/profil-manager/profil-manager';
 import { RoomDetails } from './room-details/room-details';
 import { AdminGuard } from './guards/admin.guard';
+import {Payment} from './payment/payment';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,7 +16,9 @@ export const routes: Routes = [
   { path: 'register', component: Register },
   { path: 'catalogue', component: Catalogue },
   { path: 'catalogue/profil', component: ProfileComponent },
+  { path: 'room/:id/profil', component: ProfileComponent },
   { path: 'room/:id', component: RoomDetails },
+  { path: 'profil/payment', component: Payment },
 
   // Manager
   {
@@ -93,6 +96,7 @@ export const routes: Routes = [
 
   ]
 },
+
 
   {
     path: 'unauthorized',

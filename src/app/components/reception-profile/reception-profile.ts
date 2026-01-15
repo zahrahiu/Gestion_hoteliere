@@ -5,6 +5,9 @@ import {HttpClientModule} from '@angular/common/http';
 import {RoomService} from '../../services/room.service';
 import {UserProfileService} from '../../services/user-profile.service';
 import {AuthService} from '../../services/auth.service';
+import {ReservationService} from '../../services/reservation.service';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { Chart, registerables } from 'chart.js';
 
 
 @Component({
@@ -15,7 +18,9 @@ import {AuthService} from '../../services/auth.service';
     NgIf,
     ReactiveFormsModule,
     HttpClientModule,
-    NgClass
+    NgClass,
+    DatePipe,      // <-- ajouté
+    DecimalPipe    // <-- ajouté
   ],
   templateUrl: './reception-profile.html',
   styleUrl: './reception-profile.css',
@@ -60,6 +65,7 @@ export class ReceptionProfile implements OnInit{
     private roomService: RoomService,
     private userProfileService: UserProfileService,
     private authService: AuthService,
+    private reservationService: ReservationService
   ) {
     this.profileForm = this.fb.group({
       nom: ['', Validators.required],
@@ -73,22 +79,29 @@ export class ReceptionProfile implements OnInit{
     });
 
     this.reportForm = this.fb.group({
-      reportFile: [null, Validators.required]  // ajout Validators ila bghiti
+      reportFile: [null, Validators.required]
     });
   }
 
   ngOnInit() {
+    Chart.register(...registerables);
     this.testMeEndpoint();
     this.loadMyProfile();
-    this.loadRooms()
+    this.loadRooms();
+    this.loadReservations();
   }
 
   loadRooms() {
-    this.roomService.getRooms().subscribe(
-      (data) => this.rooms = data,
-      (err) => console.error('Error fetching rooms', err)
-    );
+    this.roomService.getRooms().subscribe({
+      next: (data) => {
+        this.rooms = data;
+        this.initStatusChart();
+        this.initPriceChart();
+      },
+      error: (err) => console.error('Error fetching rooms', err)
+    });
   }
+
   loadMyProfile() {
     console.log('CALLING /me ...');
 
@@ -155,6 +168,12 @@ export class ReceptionProfile implements OnInit{
   }
   showSection(section: string): void {
     this.activeSection = section;
+    if(section === 'rooms' && this.rooms.length) {
+      setTimeout(() => {
+        this.initStatusChart();
+        this.initPriceChart();
+      }, 0);
+    }
   }
 
 
@@ -225,4 +244,141 @@ export class ReceptionProfile implements OnInit{
     this.roomsOpen = !this.roomsOpen;
   }
 
+
+  reservations: any[] = [];
+
+  loadReservations() {
+    this.reservationService.getAllReservations().subscribe({
+      next: (data: any) => {
+        console.log('Reservations enrichies:', data);
+        this.reservations = data.reservations || [];
+      },
+      error: (err) => console.error('Erreur fetching reservations', err)
+    });
+  }
+
+  confirmReservation(res: any) {
+    this.reservationService.updateStatus(res.idReservation, 'confirmed')
+      .subscribe({
+        next: () => {
+          res.statut = 'confirmed';
+
+          this.roomService.toggleRoomState(res.chambre_id, 'Occupée')
+            .subscribe({
+              next: () => {
+                alert('🚫 La chambre est maintenant OCCUPÉE');
+              },
+              error: err => {
+                console.error(err);
+                alert('❌ Erreur lors du changement de l’état de la chambre');
+              }
+            });
+        },
+        error: err => {
+          console.error(err);
+          alert('❌ Erreur lors de la confirmation');
+        }
+      });
+  }
+
+
+  rejectReservation(res: any) {
+    this.reservationService.updateStatus(res.idReservation, 'rejected')
+      .subscribe({
+        next: () => {
+          res.statut = 'rejected';
+
+          this.roomService.toggleRoomState(res.chambre_id, 'Disponible')
+            .subscribe({
+              next: () => {
+                alert('✅ La chambre est maintenant LIBRE');
+              },
+              error: err => {
+                console.error(err);
+                alert('❌ Erreur lors du changement de l’état de la chambre');
+              }
+            });
+        },
+        error: err => {
+          console.error(err);
+          alert('❌ Erreur lors du rejet');
+        }
+      });
+  }
+
+
+// ------------------- Status Chart -------------------
+  initStatusChart() {
+    const statusCount: Record<string, number> = {
+      'Disponible': 0,
+      'Occupée': 0,
+      'Maintenance': 0
+    };
+
+    this.rooms.forEach(room => {
+      if (statusCount[room.etat] !== undefined) {
+        statusCount[room.etat]++;
+      }
+    });
+
+    new Chart('statusChart', {
+      type: 'doughnut',
+      data: {
+        labels: ['Disponible', 'Occupée', 'Maintenance'],
+        datasets: [{
+          data: [
+            statusCount['Disponible'],
+            statusCount['Occupée'],
+            statusCount['Maintenance']
+          ],
+          backgroundColor: ['#2e7d32', '#c62828', '#f57c00'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+
+
+// ------------------- Price Chart -------------------
+  initPriceChart() {
+    const pricesByType: Record<string, number[]> = {};
+
+    // Group prices by room type
+    this.rooms.forEach(room => {
+      if (!pricesByType[room.type]) {
+        pricesByType[room.type] = [];
+      }
+      pricesByType[room.type].push(room.prix);
+    });
+
+    const labels = Object.keys(pricesByType);
+    const avgPrices = labels.map(type => {
+      const prices = pricesByType[type];
+      return prices.reduce((a, b) => a + b, 0) / prices.length;
+    });
+
+    new Chart('priceChart', {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Average Price (MAD)',
+          data: avgPrices,
+          backgroundColor: '#b89a5e'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  }
 }
